@@ -200,6 +200,7 @@ Why `localStorage` over `IndexedDB`:
 - Validate for KISS / YAGNI
 - Sensitive info checkup
 - Unused variabels, functons cleanup
+- Mobile-specific optimizations
 - README
 - CLAUDE.md update with layout and tech stack, and tooling
 - Validate codestyle:
