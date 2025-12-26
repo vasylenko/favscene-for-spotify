@@ -1,7 +1,7 @@
 export const config = {
   spotify: {
     clientId: import.meta.env.VITE_SPOTIFY_CLIENT_ID || '',
-    redirectUri: import.meta.env.VITE_SPOTIFY_REDIRECT_URI || 'http://localhost:5173/callback',
+    redirectUri: `${window.location.origin}/callback`,
     scopes: [
       'user-read-playback-state',
       'user-modify-playback-state',
