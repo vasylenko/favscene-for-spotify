@@ -15,12 +15,6 @@ importers:
         specifier: ^4.6.4
         version: 4.6.4(vue@3.5.26(typescript@5.9.3))
     devDependencies:
-      '@unocss/preset-uno':
-        specifier: ^66.5.11
-        version: 66.5.11
-      '@unocss/reset':
-        specifier: ^66.5.11
-        version: 66.5.11
       '@vitejs/plugin-vue':
         specifier: ^6.0.3
         version: 6.0.3(vite@7.3.0(jiti@2.6.1))(vue@3.5.26(typescript@5.9.3))

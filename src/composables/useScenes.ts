@@ -1,7 +1,7 @@
 import { ref } from 'vue'
 import type { Scene } from '@/types'
 
-const STORAGE_KEY = 'spotify_scenes'
+const STORAGE_KEY = 'favscene_spotify_data'
 
 const scenes = ref<Scene[]>(loadScenes())
 

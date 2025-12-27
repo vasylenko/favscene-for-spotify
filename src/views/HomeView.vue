@@ -134,7 +134,7 @@ function cancelDevicePicker() {
     <!-- Not authenticated -->
     <div v-else-if="!isAuthenticated" class="flex items-center justify-center min-h-screen">
       <div class="text-center space-y-6 max-w-md">
-        <h1 class="text-3xl font-bold">Spotify Scenes</h1>
+        <h1 class="text-3xl font-bold">FavScene for Spotify</h1>
         <p class="text-spotify-gray">
           One-tap launcher for your favorite playlists on preferred devices.
         </p>
@@ -152,7 +152,7 @@ function cancelDevicePicker() {
     <div v-else>
       <!-- Header -->
       <header class="flex items-center justify-between mb-6">
-        <h1 class="text-xl font-bold">Scenes</h1>
+        <h1 class="text-xl font-bold">Your Spotify Scenes</h1>
         <div class="flex items-center gap-3">
           <span class="text-spotify-gray text-sm">{{ user?.displayName }}</span>
           <button
@@ -175,7 +175,7 @@ function cancelDevicePicker() {
 
       <!-- Empty state -->
       <div v-if="scenes.length === 0" class="flex flex-col items-center justify-center py-20 text-center">
-        <p class="text-spotify-gray mb-4">No scenes yet. Create your first one!</p>
+        <p class="text-spotify-gray mb-4">No favorite scenes yet. Create your first one!</p>
         <button
           class="px-6 py-3 bg-spotify-green text-black font-semibold rounded-full hover:scale-105 transition-transform"
           @click="router.push('/create')"
@@ -206,7 +206,7 @@ function cancelDevicePicker() {
 
           <!-- Edit button -->
           <button
-            class="absolute top-2 right-2 w-8 h-8 flex items-center justify-center rounded-full bg-black/40 hover:bg-black/60 transition-colors text-white/70 hover:text-white"
+            class="absolute top-2 right-2 w-8 h-8 flex items-center justify-center rounded-full bg-gray-900 text-white hover:bg-black/60 transition-colors text-white/70 hover:text-white"
             @click.stop="openActionMenu(scene)"
           >
             <span class="text-lg leading-none">&#8942;</span>

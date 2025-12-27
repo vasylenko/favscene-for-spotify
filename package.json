@@ -1,5 +1,5 @@
 {
-  "name": "spotify-scenes",
+  "name": "favscene-for-spotify",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -14,8 +14,6 @@
     "vue-router": "^4.6.4"
   },
   "devDependencies": {
-    "@unocss/preset-uno": "^66.5.11",
-    "@unocss/reset": "^66.5.11",
     "@vitejs/plugin-vue": "^6.0.3",
     "typescript": "^5.9.3",
     "unocss": "^66.5.11",
