@@ -229,6 +229,12 @@ function cancelDevicePicker() {
           </div>
         </button>
       </div>
+
+      <!-- Help text -->
+      <div v-if="scenes.length > 0" class="text-center text-sm text-spotify-gray mt-6 space-y-1">
+        <p>Tap the scene picture to play</p>
+        <p>Tap ⋮ (three dots icon) to edit or delete the scene</p>
+      </div>
     </div>
 
     <!-- Device picker modal -->
