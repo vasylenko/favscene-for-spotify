@@ -6,28 +6,39 @@ Users can create scenes but cannot modify or remove them. To fix a mistake or ch
 
 ## Solution
 
-Add edit and delete capabilities to existing scenes via long-press interaction (works on mobile + desktop).
+Add edit and delete capabilities via edit button on each scene tile.
 
 ## UX Design
 
 ### Triggering Edit Mode
 
+Small edit button (⋮ or ✏️) in corner of scene tile:
+
 ```
-User long-presses scene tile (500ms)
-  │
-  └─► Show action menu:
-        ┌─────────────┐
-        │ ✏️  Edit     │
-        │ 🗑️  Delete   │
-        │ ─────────── │
-        │    Cancel   │
-        └─────────────┘
+┌─────────────────────┐
+│                 [⋮] │  ← edit button (top-right corner)
+│                     │
+│   [playlist image]  │  ← tap anywhere else → play
+│                     │
+│   Scene Name        │
+│   Device            │
+└─────────────────────┘
 ```
 
-Why long-press:
-- Single tap already plays the scene
-- Works identically on mobile (touch) and desktop (mouse hold)
-- Familiar pattern (iOS/Android home screen icons)
+Tap edit button → show action menu:
+```
+┌─────────────┐
+│ ✏️  Edit     │
+│ 🗑️  Delete   │
+│ ─────────── │
+│    Cancel   │
+└─────────────┘
+```
+
+Why edit button (not long-press):
+- Simpler implementation (no timers, no touch event conflicts)
+- More discoverable (visible affordance)
+- No conflict with tap-to-play or scrolling
 
 ### Edit Flow
 
@@ -98,19 +109,23 @@ deleteScene(id)
   └─► return true
 ```
 
-### HomeView.vue - Add Long-Press Handler
+### HomeView.vue - Add Edit Button
 
 ```
-Scene tile events:
-  - @click → playScene() (existing)
-  - @mousedown + @touchstart → start 500ms timer
-  - @mouseup + @touchend → cancel timer if < 500ms
-  - Timer fires → show action menu
+Scene tile structure:
+  <button @click="playScene">        ← existing, plays scene
+    <img ... />                      ← playlist image
+    <div class="overlay">
+      <button @click.stop="openMenu" ← NEW: edit button, .stop prevents playScene
+        class="absolute top-2 right-2">
+        ⋮
+      </button>
+    </div>
+    <div>Scene name / device</div>
+  </button>
 ```
 
-Why not @contextmenu (right-click):
-- Doesn't work on mobile
-- Long-press is more consistent cross-platform
+Action menu: Reuse modal pattern from device picker (centered overlay).
 
 ### New Route: /edit/:id
 
@@ -128,52 +143,56 @@ EditSceneView:
 
 ### Component Reuse Strategy
 
-Option A: Duplicate CreateSceneView → EditSceneView (bad - code duplication)
-
-Option B: Add `mode` prop to CreateSceneView (okay - but muddies component)
-
-**Option C (recommended):** Extract wizard steps into composable, use in both views
+Single component with `mode` prop (simpler than extracting composable):
 
 ```
-useSceneWizard(initialScene?: Scene)
-  │
-  ├─► Reactive state: currentStep, selectedPlaylist, selectedDevice, name, volume
-  │
-  ├─► If initialScene provided → populate state from it
-  │
-  └─► Return: state + navigation functions + validation
+Rename: CreateSceneView.vue → SceneWizardView.vue
+
+Props:
+  - mode: 'create' | 'edit'
+  - sceneId?: string (required if mode='edit')
+
+Behavior by mode:
+  create:
+    - Start with empty state
+    - On submit → addScene()
+    - Button label: "Create Scene"
+
+  edit:
+    - Load scene by sceneId on mount
+    - Pre-fill wizard state from scene
+    - On submit → updateScene()
+    - Button label: "Save Changes"
 ```
 
-Both CreateSceneView and EditSceneView use same composable, differ only in:
-- Initial state (empty vs pre-filled)
-- Submit action (addScene vs updateScene)
-- Button label ("Create" vs "Save")
+Why single component (not composable extraction):
+- Only 2 consumers (create/edit) - not worth abstraction overhead
+- Mode prop keeps logic in one place
+- Less files to maintain
 
 ## Files to Change
 
 | File | Change |
 |------|--------|
 | `src/composables/useScenes.ts` | Add `updateScene()`, `deleteScene()` |
-| `src/composables/useSceneWizard.ts` | New - extract wizard logic |
-| `src/views/HomeView.vue` | Add long-press handler, action menu |
-| `src/views/CreateSceneView.vue` | Refactor to use useSceneWizard |
-| `src/views/EditSceneView.vue` | New - edit mode using useSceneWizard |
-| `src/router/index.ts` | Add `/edit/:id` route |
+| `src/views/HomeView.vue` | Add edit button overlay, action menu modal |
+| `src/views/CreateSceneView.vue` | Rename to `SceneWizardView.vue`, add mode prop |
+| `src/router/index.ts` | Update `/create` route, add `/edit/:id` route |
 
 ## Edge Cases
 
 | Case | Handling |
 |------|----------|
 | Edit scene that no longer exists | Redirect to home (another tab deleted it) |
-| Long-press while scene is playing | Still show menu (playing state is visual only) |
 | Delete last scene | Allow it, show empty state |
-| Edit with no available devices | Same as create - show "no devices" message |
+| Saved device offline in edit mode | Fetch fresh device list. If saved device found → highlight it. If not found → no pre-selection, user picks new device. |
+| Saved playlist deleted on Spotify | We don't validate. User can keep it or pick a new one. Playback will fail gracefully if playlist gone. |
 
 ## Decision Log
 
 | Decision | Rationale |
 |----------|-----------|
-| Long-press trigger | Works on all platforms, doesn't conflict with tap-to-play |
+| Edit button (not long-press) | Simpler - no timers, no touch conflicts, more discoverable |
 | Reuse wizard for edit | KISS - no new UI, consistent UX, less code |
 | Confirmation for delete only | Edit is reversible (just edit again), delete is not |
-| Extract useSceneWizard | DRY - shared logic, easier testing, cleaner views |
+| Single component with mode prop | Simpler than composable extraction - only 2 consumers, less files |

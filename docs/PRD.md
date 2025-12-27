@@ -209,10 +209,10 @@ Why `localStorage` over `IndexedDB`:
     - no magic numbers or other hardcoded values burried in the code
 
 ### Features
-- P0 - Edit/delete scenes (long-press on tile)
+- P0 - Edit/delete for saved scene to change playlist or device or volume level
 - P2 - Play/pause controls on active scene tile
-- P1 - Multiple content types (albums, podcasts, liked songs)
+- P2 - Multiple content types (albums, podcasts, liked songs)
 - P1 - "Save recent" scene creation from recently played
 - P3 - Logout flow
 - P0 - User-friendly error messages with troubleshooting guides
-- P2 - Support secure encrypted user preferences storage (Workers KV?) to allow access to the same scenes from different devices
+- P1 - Support secure encrypted user preferences storage (Workers KV?) to allow access to the same scenes from different devices - [TODO-support-multiple-browsers.md](docs/features/TODO-support-multiple-browsers.md)
