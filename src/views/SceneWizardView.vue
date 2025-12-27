@@ -1,13 +1,18 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { getUserPlaylists, getAvailableDevices } from '@/services/spotifyApi'
 import { useScenes } from '@/composables/useScenes'
 import { DEFAULT_VOLUME } from '@/types'
 import type { SpotifyPlaylist, SpotifyDevice } from '@/types'
 
 const router = useRouter()
-const { addScene } = useScenes()
+const route = useRoute()
+const { addScene, getScene, updateScene } = useScenes()
+
+// Edit mode detection
+const isEditMode = computed(() => route.path.startsWith('/edit/'))
+const sceneId = computed(() => (isEditMode.value ? (route.params.id as string) : null))
 
 type WizardStep = 'playlist' | 'device' | 'name'
 
@@ -37,6 +42,30 @@ const canSave = computed(() => {
 })
 
 onMounted(async () => {
+  // In edit mode, load existing scene data
+  if (isEditMode.value && sceneId.value) {
+    const scene = getScene(sceneId.value)
+    if (!scene) {
+      // Scene no longer exists, redirect to home
+      router.push('/')
+      return
+    }
+    // Pre-fill wizard state with scene data
+    selectedPlaylist.value = {
+      id: scene.playlist.id,
+      name: scene.playlist.name,
+      uri: scene.playlist.uri,
+      imageUrl: scene.playlist.imageUrl,
+    }
+    selectedDevice.value = {
+      id: scene.device.id,
+      name: scene.device.name,
+      type: scene.device.type,
+      is_active: false,
+    }
+    sceneName.value = scene.name
+    sceneVolume.value = scene.volume ?? DEFAULT_VOLUME
+  }
   await loadPlaylists()
 })
 
@@ -75,8 +104,10 @@ function selectPlaylist(playlist: SpotifyPlaylist) {
 
 function selectDevice(device: SpotifyDevice) {
   selectedDevice.value = device
-  // Default scene name to playlist name
-  sceneName.value = selectedPlaylist.value?.name || ''
+  // Default scene name to playlist name (only in create mode or if name is empty)
+  if (!isEditMode.value || !sceneName.value) {
+    sceneName.value = selectedPlaylist.value?.name || ''
+  }
   currentStep.value = 'name'
 }
 
@@ -95,7 +126,7 @@ function saveScene() {
     return
   }
 
-  addScene({
+  const sceneData = {
     name: sceneName.value.trim(),
     volume: sceneVolume.value,
     playlist: {
@@ -109,7 +140,13 @@ function saveScene() {
       name: selectedDevice.value.name,
       type: selectedDevice.value.type,
     },
-  })
+  }
+
+  if (isEditMode.value && sceneId.value) {
+    updateScene(sceneId.value, sceneData)
+  } else {
+    addScene(sceneData)
+  }
 
   router.push('/')
 }
@@ -125,7 +162,7 @@ function saveScene() {
       >
         <span class="text-xl">&larr;</span>
       </button>
-      <h1 class="text-xl font-bold">Create Scene</h1>
+      <h1 class="text-xl font-bold">{{ isEditMode ? 'Edit Scene' : 'Create Scene' }}</h1>
     </header>
 
     <!-- Progress indicator -->
@@ -301,7 +338,7 @@ function saveScene() {
         :disabled="!canSave"
         @click="saveScene"
       >
-        Create Scene
+        {{ isEditMode ? 'Save Changes' : 'Create Scene' }}
       </button>
     </div>
   </div>

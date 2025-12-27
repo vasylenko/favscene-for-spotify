@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '@/views/HomeView.vue'
 import CallbackView from '@/views/CallbackView.vue'
-import CreateSceneView from '@/views/CreateSceneView.vue'
+import SceneWizardView from '@/views/SceneWizardView.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -19,7 +19,12 @@ const router = createRouter({
     {
       path: '/create',
       name: 'create-scene',
-      component: CreateSceneView,
+      component: SceneWizardView,
+    },
+    {
+      path: '/edit/:id',
+      name: 'edit-scene',
+      component: SceneWizardView,
     },
   ],
 })

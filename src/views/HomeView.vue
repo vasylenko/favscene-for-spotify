@@ -10,7 +10,40 @@ import type { Scene, SpotifyDevice } from '@/types'
 
 const router = useRouter()
 const { isAuthenticated, initiateLogin, user, isLoading: authLoading } = useSpotifyAuth()
-const { scenes } = useScenes()
+const { scenes, deleteScene } = useScenes()
+
+// Edit/Delete menu state
+const actionMenuScene = ref<Scene | null>(null)
+const deleteConfirmScene = ref<Scene | null>(null)
+
+function openActionMenu(scene: Scene) {
+  actionMenuScene.value = scene
+}
+
+function closeActionMenu() {
+  actionMenuScene.value = null
+}
+
+function editScene(scene: Scene) {
+  closeActionMenu()
+  router.push(`/edit/${scene.id}`)
+}
+
+function confirmDelete(scene: Scene) {
+  closeActionMenu()
+  deleteConfirmScene.value = scene
+}
+
+function cancelDelete() {
+  deleteConfirmScene.value = null
+}
+
+function executeDelete() {
+  if (deleteConfirmScene.value) {
+    deleteScene(deleteConfirmScene.value.id)
+    deleteConfirmScene.value = null
+  }
+}
 
 const configValid = validateConfig()
 const playingSceneId = ref<string | null>(null)
@@ -171,6 +204,14 @@ function cancelDevicePicker() {
           <!-- Overlay gradient -->
           <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
+          <!-- Edit button -->
+          <button
+            class="absolute top-2 right-2 w-8 h-8 flex items-center justify-center rounded-full bg-black/40 hover:bg-black/60 transition-colors text-white/70 hover:text-white"
+            @click.stop="openActionMenu(scene)"
+          >
+            <span class="text-lg leading-none">&#8942;</span>
+          </button>
+
           <!-- Scene info -->
           <div class="absolute bottom-0 left-0 right-0 p-3">
             <div class="font-semibold truncate">{{ scene.name }}</div>
@@ -218,6 +259,65 @@ function cancelDevicePicker() {
         >
           Cancel
         </button>
+      </div>
+    </div>
+
+    <!-- Action menu modal -->
+    <div
+      v-if="actionMenuScene"
+      class="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50"
+      @click.self="closeActionMenu"
+    >
+      <div class="bg-gray-900 rounded-xl p-2 max-w-xs w-full">
+        <button
+          class="w-full p-4 text-left hover:bg-gray-800 rounded-lg transition-colors flex items-center gap-3"
+          @click="editScene(actionMenuScene)"
+        >
+          <span>&#9998;</span>
+          <span>Edit</span>
+        </button>
+        <button
+          class="w-full p-4 text-left hover:bg-gray-800 rounded-lg transition-colors flex items-center gap-3 text-red-400"
+          @click="confirmDelete(actionMenuScene)"
+        >
+          <span>&#128465;</span>
+          <span>Delete</span>
+        </button>
+        <div class="border-t border-gray-700 my-2" />
+        <button
+          class="w-full p-4 text-center text-spotify-gray hover:text-white transition-colors rounded-lg"
+          @click="closeActionMenu"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+
+    <!-- Delete confirmation dialog -->
+    <div
+      v-if="deleteConfirmScene"
+      class="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50"
+      @click.self="cancelDelete"
+    >
+      <div class="bg-gray-900 rounded-xl p-6 max-w-sm w-full">
+        <h2 class="text-lg font-semibold mb-2">Delete "{{ deleteConfirmScene.name }}"?</h2>
+        <p class="text-spotify-gray text-sm mb-6">
+          This cannot be undone.
+        </p>
+        <div class="flex gap-3">
+          <button
+            class="flex-1 p-3 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors"
+            @click="cancelDelete"
+          >
+            Cancel
+          </button>
+          <button
+            class="flex-1 p-3 bg-red-600 rounded-lg hover:bg-red-500 transition-colors font-semibold"
+            @click="executeDelete"
+          >
+            Delete
+          </button>
+        </div>
       </div>
     </div>
   </div>

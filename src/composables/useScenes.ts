@@ -36,10 +36,31 @@ function getScene(id: string): Scene | undefined {
   return scenes.value.find((s) => s.id === id)
 }
 
+function updateScene(id: string, updates: Partial<Omit<Scene, 'id'>>): boolean {
+  const index = scenes.value.findIndex((s) => s.id === id)
+  if (index === -1) return false
+
+  scenes.value[index] = { ...scenes.value[index], ...updates }
+  saveScenes()
+  return true
+}
+
+function deleteScene(id: string): boolean {
+  const initialLength = scenes.value.length
+  scenes.value = scenes.value.filter((s) => s.id !== id)
+  if (scenes.value.length !== initialLength) {
+    saveScenes()
+    return true
+  }
+  return false
+}
+
 export function useScenes() {
   return {
     scenes,
     addScene,
     getScene,
+    updateScene,
+    deleteScene,
   }
 }
