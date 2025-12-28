@@ -8,20 +8,15 @@ const route = useRoute()
 const { handleCallback, isLoading, error } = useSpotifyAuth()
 
 onMounted(async () => {
-  const code = route.query.code as string | undefined
+  // Check for error from Spotify (e.g., user denied access)
   const errorParam = route.query.error as string | undefined
-
   if (errorParam) {
     error.value = `Spotify authorization failed: ${errorParam}`
     return
   }
 
-  if (!code) {
-    error.value = 'No authorization code received'
-    return
-  }
-
-  const success = await handleCallback(code)
+  // SDK detects callback params (code) automatically
+  const success = await handleCallback()
   if (success) {
     router.replace('/')
   }

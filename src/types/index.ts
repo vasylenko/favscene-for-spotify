@@ -31,12 +31,6 @@ export interface Scene {
 
 export const DEFAULT_VOLUME = 15
 
-export interface SpotifyTokens {
-  accessToken: string
-  refreshToken: string
-  expiresAt: number
-}
-
 export interface SpotifyUser {
   id: string
   displayName: string

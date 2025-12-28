@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { getUserPlaylists, getAvailableDevices } from '@/services/spotifyApi'
+import { getUserPlaylists, getAvailableDevices } from '@/services/spotify'
 import { useScenes } from '@/composables/useScenes'
 import { DEFAULT_VOLUME } from '@/types'
 import type { SpotifyPlaylist, SpotifyDevice } from '@/types'

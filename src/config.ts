@@ -9,9 +9,6 @@ export const config = {
       'playlist-read-private',
       'playlist-read-collaborative',
     ],
-    authUrl: 'https://accounts.spotify.com/authorize',
-    tokenUrl: 'https://accounts.spotify.com/api/token',
-    apiBaseUrl: 'https://api.spotify.com/v1',
   },
 } as const
 
