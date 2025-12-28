@@ -61,18 +61,18 @@ export async function startPlayback(
   try {
     await api.player.startResumePlayback(deviceId, contextUri)
     return { success: true }
-  } catch (err) {
-    const message = err instanceof Error ? err.message : 'Playback failed'
+  } catch (err: unknown) {
+    // SDK throws Error with message like: "Unrecognised response code: 404 - . Body: {...}"
+    const message = err instanceof Error ? err.message : String(err)
 
-    // Parse SDK error for specific cases
-    if (message.includes('404') || message.includes('not found')) {
+    if (message.includes('404') || message.toLowerCase().includes('not found')) {
       return { success: false, error: 'Device not found or offline' }
     }
-    if (message.includes('403') || message.includes('Premium')) {
+    if (message.includes('403') || message.toLowerCase().includes('premium')) {
       return { success: false, error: 'Playback restricted - Premium required' }
     }
 
-    return { success: false, error: message }
+    return { success: false, error: 'Playback failed' }
   }
 }
 
@@ -86,8 +86,8 @@ export async function setVolume(
   try {
     await api.player.setPlaybackVolume(volume, deviceId)
     return { success: true }
-  } catch (err) {
-    const message = err instanceof Error ? err.message : 'Failed to set volume'
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err)
 
     if (message.includes('403')) {
       return { success: false, error: 'Device does not support volume control' }
@@ -96,7 +96,7 @@ export async function setVolume(
       return { success: false, error: 'Device not found' }
     }
 
-    return { success: false, error: message }
+    return { success: false, error: 'Failed to set volume' }
   }
 }
 
