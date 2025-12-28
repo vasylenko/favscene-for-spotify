@@ -273,13 +273,13 @@ function saveScene() {
       </p>
 
       <button
-        class="w-full mt-4 p-3 text-spotify-gray hover:text-white transition-colors"
+        class="w-full mt-4 p-3 text-spotify-gray hover:text-white transition-colors border border-spotify-gray rounded-lg"
         @click="loadDevices"
       >
         Refresh devices
       </button>
 
-      <p class="mt-4 text-xs text-spotify-gray text-center">
+      <p class="w-full mt-4 p-3 text-spotify-gray text-center">
         Don't see your device? Open Spotify on it first and play something briefly.
       </p>
     </div>
