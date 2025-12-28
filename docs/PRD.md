@@ -140,7 +140,7 @@ Why `localStorage` over `IndexedDB`:
 
 ## Data Model
 
-### Scene (stored in browser)
+### Scene 
 ```
 {
   id: string,          // UUID, generated locally
@@ -172,11 +172,11 @@ Why `localStorage` over `IndexedDB`:
 ## Proof of Concept (POC)
 
 ### Success Criteria
-- [ ] User can authenticate with Spotify (PKCE flow)
-- [ ] User can create at least one scene (wizard: playlist → device → name)
-- [ ] Tapping a scene starts playback on the selected device
-- [ ] Scenes persist across browser sessions (localStorage)
-- [ ] Basic error messages shown when things fail
+- [x] User can authenticate with Spotify (PKCE flow)
+- [x] User can create at least one scene (wizard: playlist → device → name)
+- [x] Tapping a scene starts playback on the selected device
+- [x] Scenes persist across browser sessions (localStorage)
+- [x] Basic error messages shown when things fail
 
 ### Out of Scope for POC
 - Edit/delete scenes
@@ -196,28 +196,28 @@ Why `localStorage` over `IndexedDB`:
 ## Minimum Viable Product (MVP)
 
 ### Technical Improvements
-- Migrate to official Spotify TypeScript SDK (`@spotify/web-api-ts-sdk`) - better types, built-in token refresh, maintained by Spotify
-- Rename everywhere to "FavScene for Spotify"
-- Validate for KISS / YAGNI
-- Sensitive info checkup
-- Unused variabels, functons cleanup
-- Mobile-specific optimizations
-- Log levels (default - error) and check what we emit to console
-- README
-- CLAUDE.md update with layout and tech stack, and tooling
-- Validate codestyle:
-    - TS-specific best practices
-    - comments answer 'why' not 'what'
-    - no magic numbers or other hardcoded values burried in the code
+- [x] Migrate to official Spotify TypeScript SDK (`@spotify/web-api-ts-sdk`) - better types, built-in token refresh, maintained by Spotify
+- [x] Rename everywhere to "FavScene for Spotify"
+- [ ] Validate for KISS / YAGNI
+- [ ] Sensitive info checkup
+- [ ] Unused variables, functions cleanup
+- [ ] Mobile-specific optimizations
+- [ ] Log levels (default - error) and check what we emit to console
+- [ ] README
+- [ ] CLAUDE.md update with layout and tech stack, and tooling
+- [ ] Validate codestyle:
+    - [ ] TS-specific best practices
+    - [ ] comments answer 'why' not 'what'
+    - [ ] no magic numbers or other hardcoded values buried in the code
 
 ### Features
-- P0 - Edit/delete for saved scene to change playlist or device or volume level
-- P2 - Play/pause controls on active scene tile
-- P2 - Multiple content types (albums, podcasts, liked songs)
-- P1 - "Save recent" scene creation from recently played
-- P3 - Logout flow
-- P0 - User-friendly error messages with troubleshooting guides - [TODO-user-friendly-errors.md](docs/features/TODO-user-friendly-errors.md)
-- P1 - Support secure encrypted user preferences storage (Workers KV?) to allow access to the same scenes from different devices - [TODO-support-multiple-browsers.md](docs/features/TODO-support-multiple-browsers.md)
+- [x] P0 - Edit/delete for saved scene to change playlist or device or volume level
+- [ ] P0 - User-friendly error messages with troubleshooting guides - [TODO-user-friendly-errors.md](docs/features/TODO-user-friendly-errors.md)
+- [ ] P1 - Support secure encrypted user preferences storage (Workers KV?) to allow access to the same scenes from different devices - [TODO-support-multiple-browsers.md](docs/features/TODO-support-multiple-browsers.md)
+- [ ] P1 - Play/pause controls on active scene tile
+- [ ] P2 - "Save recent" scene creation from recently played
+- [ ] P2 - Multiple content types (albums, podcasts, liked songs) - [TODO-support-multiple-browsers.md](./features/TODO-support-multiple-browsers.md)
+- [ ] P3 - Logout flow and "comlpetely erase my data" flow
 
 ## Post MVP
 - Try out LaunchDarkly for feature flags, e.g., when I want to test some new stuff 
