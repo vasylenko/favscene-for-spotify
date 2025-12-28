@@ -218,3 +218,7 @@ Why `localStorage` over `IndexedDB`:
 - P3 - Logout flow
 - P0 - User-friendly error messages with troubleshooting guides - [TODO-user-friendly-errors.md](docs/features/TODO-user-friendly-errors.md)
 - P1 - Support secure encrypted user preferences storage (Workers KV?) to allow access to the same scenes from different devices - [TODO-support-multiple-browsers.md](docs/features/TODO-support-multiple-browsers.md)
+
+## Post MVP
+- Try out LaunchDarkly for feature flags, e.g., when I want to test some new stuff 
+- Try out CloudFlare Workers observability 
