@@ -111,6 +111,10 @@ Content-Type: application/json
 
 ## Implementation
 
+### HTTPS ABSOLUTE
+
+The Cloudflare Worker for the logic and static assets MUST be configured to use HTTPS only and redirect all HTTP to HTTPS - tokens in cleartext would be catastrophic.
+
 ### Worker Algorithm
 
 ```
@@ -212,6 +216,39 @@ App starts
   - No PII stored
   - Clear privacy policy recommended
   - We can always make this more complex and secure if users demand (though this will require them to use +1 step in UX)
+
+
+### Product Security Concerns
+**1. MEDIUM: Shared KV Write Quota Exhaustion**
+
+Why it's a flaw: Cloudflare KV free tier has a global limit of 1,000 writes/day across all users. A single malicious actor with a valid Spotify token could exhaust this by spamming PUT /api/scenes.
+
+Impact: All legitimate users lose the ability to save scenes for the rest of the day.
+
+Consequence if not fixed: One bad actor can deny service to everyone. This is a realistic attack because obtaining a valid Spotify token only requires signing up for Spotify.
+
+Mitigation: Per-user rate limiting (e.g., max 10-20 writes/hour per user_id, tracked in KV with TTL).
+
+
+**2. LOW: No Request Body Size Limit Specified**
+
+Why it's a flaw: The design doesn't specify payload limits for PUT /api/scenes. An attacker could send massive JSON payloads.
+
+Impact: Worker memory consumption, potential storage cost overrun, and corrupted/bloated user data.
+
+Consequence if not fixed: Resource abuse. Cloudflare has implicit limits (~128KB for Workers), but relying on infrastructure defaults isn't defense-in-depth.
+
+Mitigation: Explicit limit in Worker code (e.g., reject if body > 50KB). Also validate scene array length (e.g., max 50 scenes as the doc already suggests is "more than enough").
+
+**3. LOW: Spotify API Rate Limit Dependency**
+
+Why it's a flaw: Every request to your Worker triggers a call to Spotify's /v1/me. An attacker flooding your API with garbage tokens still causes outbound calls to Spotify.
+
+Impact: Spotify may rate-limit your Worker's IP range, blocking token validation for legitimate users.
+
+Consequence if not fixed: Service availability depends on an external party's rate limits that you don't control. An attacker who doesn't even have a valid token can cause disruption.
+
+Mitigation: Rate-limit requests before calling Spotify (by IP or token hash). Optionally, cache validated token→user_id mappings with short TTL (5-10 min). The doc already mentions this as a potential optimization.
 
 ### Alternatives Considered
 
