@@ -202,8 +202,8 @@ Why `localStorage` over `IndexedDB`:
 - [x] Sensitive info checkup
 - [x] Unused variables, functions cleanup
 - [x] Log levels (default - error) and check what we emit to console
-- [ ] README
-- [ ] CLAUDE.md update with layout and tech stack, and tooling
+- [x] README explains the project essense, warns about active development phase, and then explains how it works, design principles, and tech stack behind (bfiefly) -- targeted on end users, not developers of the project
+- [x] CLAUDE.md updated with layout and tech stack details, and tooling details -- targeted as it would target real senior developers (mind the level of ephasizing on details where needed vs. skipping the obvious for senior level) who work on the project
 - [x] Validate codestyle:
     - [x] TS and Vue-specific best practices
     - [x] comments answer 'why' not 'what'

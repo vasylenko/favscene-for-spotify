@@ -2,9 +2,15 @@
 
 One-tap launcher for your favorite Spotify playlists on preferred devices.
 
+## Status
+
+⚠️ **Active development — MVP phase.** Features may change, and you might encounter rough edges. Feedback is very welcome!
+
 ## The Problem
 
 Playing a specific playlist on a specific device through Spotify takes too many taps: tap-tap-tap to find the playlist, tap to open it, tap the device picker, select the device, adjust volume. Every. Single. Time.
+
+Siri does not solve this either.
 
 ## The Solution
 
@@ -14,7 +20,7 @@ Example: "Morning Coffee" scene = Jazz playlist on kitchen Google Home speaker a
 
 ## How It Works
 
-1. You login dirctly to your Spotify **Premium** account 
+1. Login directly with your Spotify **Premium** account 
 2. Create scenes by picking playlist + device
 3. Tap a scene tile to start playback instantly
 
@@ -27,11 +33,11 @@ No account creation, no backend servers. Your data stays in your browser, the ap
 - **Graceful failures** - Devices go offline; the app handles it smoothly
 - **Your data, your browser** - No tracking, no analytics, no sync (yet; but I have a plan to add cross-browser sync)
 
-## Status
-
-**Active development. Currently in MVP phase.**
-
 ## Requirements
 
-- Spotify Premium account (required for playback control - this is a Spotify API limitation)
+- Spotify Premium account (required for playback control — this is a Spotify API limitation)
 - Modern browser, desktop or mobile (Chrome, Firefox, Safari, Edge)
+
+## Built With
+
+Vue.js • TypeScript • Spotify Web API • Hosted on Cloudflare Workers
