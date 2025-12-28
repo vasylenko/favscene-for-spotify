@@ -186,11 +186,15 @@ function cancelDevicePicker() {
 
       <!-- Scene grid -->
       <div v-else class="grid grid-cols-2 gap-4 max-w-lg mx-auto">
-        <button
+        <div
           v-for="scene in scenes"
           :key="scene.id"
-          class="relative aspect-square rounded-xl overflow-hidden bg-gray-800 hover:scale-102 transition-transform active:scale-98"
+          role="button"
+          tabindex="0"
+          class="relative aspect-square rounded-xl overflow-hidden bg-gray-800 hover:scale-102 transition-transform active:scale-98 cursor-pointer"
           @click="playScene(scene)"
+          @keydown.enter="playScene(scene)"
+          @keydown.space.prevent="playScene(scene)"
         >
           <!-- Playlist image -->
           <img
@@ -227,7 +231,7 @@ function cancelDevicePicker() {
               Playing!
             </div>
           </div>
-        </button>
+        </div>
       </div>
 
       <!-- Help text -->
