@@ -33,9 +33,8 @@ async function initiateLogin(): Promise<void> {
 
   try {
     const sdk = getSpotifyApi()
-    // This triggers the OAuth redirect to Spotify
     await sdk.authenticate()
-  } catch (err) {
+  } catch (err: unknown) {
     error.value = err instanceof Error ? err.message : 'Login failed'
   } finally {
     isLoading.value = false
@@ -55,14 +54,13 @@ async function handleCallback(): Promise<boolean> {
       return false
     }
 
-    // Fetch and store user profile
     const profile = await getCurrentUserProfile()
     if (profile) {
       saveUser(profile)
     }
 
     return true
-  } catch (err) {
+  } catch (err: unknown) {
     error.value = err instanceof Error ? err.message : 'Authentication failed'
     return false
   } finally {

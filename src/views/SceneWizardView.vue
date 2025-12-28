@@ -10,7 +10,6 @@ const router = useRouter()
 const route = useRoute()
 const { addScene, getScene, updateScene } = useScenes()
 
-// Edit mode detection
 const isEditMode = computed(() => route.path.startsWith('/edit/'))
 const sceneId = computed(() => (isEditMode.value ? (route.params.id as string) : null))
 
@@ -20,12 +19,10 @@ const currentStep = ref<WizardStep>('playlist')
 const isLoading = ref(false)
 const error = ref<string | null>(null)
 
-// Data
 const playlists = ref<SpotifyPlaylist[]>([])
 const devices = ref<SpotifyDevice[]>([])
 const playlistSearch = ref('')
 
-// Selections
 const selectedPlaylist = ref<SpotifyPlaylist | null>(null)
 const selectedDevice = ref<SpotifyDevice | null>(null)
 const sceneName = ref('')
@@ -42,15 +39,13 @@ const canSave = computed(() => {
 })
 
 onMounted(async () => {
-  // In edit mode, load existing scene data
   if (isEditMode.value && sceneId.value) {
     const scene = getScene(sceneId.value)
     if (!scene) {
-      // Scene no longer exists, redirect to home
+      // Scene was deleted or user has stale bookmark - gracefully redirect
       router.push('/')
       return
     }
-    // Pre-fill wizard state with scene data
     selectedPlaylist.value = {
       id: scene.playlist.id,
       name: scene.playlist.name,
@@ -74,7 +69,7 @@ async function loadPlaylists() {
   error.value = null
   try {
     playlists.value = await getUserPlaylists()
-  } catch (err) {
+  } catch (err: unknown) {
     error.value = err instanceof Error ? err.message : 'Failed to load playlists'
   } finally {
     isLoading.value = false
@@ -89,7 +84,7 @@ async function loadDevices() {
     if (devices.value.length === 0) {
       error.value = 'No devices found. Open Spotify on a device first.'
     }
-  } catch (err) {
+  } catch (err: unknown) {
     error.value = err instanceof Error ? err.message : 'Failed to load devices'
   } finally {
     isLoading.value = false

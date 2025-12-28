@@ -12,7 +12,6 @@ const router = useRouter()
 const { isAuthenticated, initiateLogin, user, isLoading: authLoading } = useSpotifyAuth()
 const { scenes, deleteScene } = useScenes()
 
-// Edit/Delete menu state
 const actionMenuScene = ref<Scene | null>(null)
 const deleteConfirmScene = ref<Scene | null>(null)
 
@@ -48,7 +47,7 @@ function executeDelete() {
 const configValid = validateConfig()
 const playingSceneId = ref<string | null>(null)
 const errorMessage = ref<string | null>(null)
-const showDevicePicker = ref(false)
+const isDevicePickerOpen = ref(false)
 const availableDevices = ref<SpotifyDevice[]>([])
 const pendingScene = ref<Scene | null>(null)
 
@@ -71,7 +70,7 @@ async function playScene(scene: Scene) {
   if (result.success) {
     await handlePlaybackSuccess(scene.volume ?? DEFAULT_VOLUME, scene.device.id)
   } else if (result.error?.includes('not found') || result.error?.includes('offline')) {
-    // Device not available, show device picker
+    // Saved device went offline - offer alternative devices instead of failing
     pendingScene.value = scene
     try {
       availableDevices.value = await getAvailableDevices()
@@ -79,7 +78,7 @@ async function playScene(scene: Scene) {
         errorMessage.value = 'No devices available. Open Spotify on a device first.'
         playingSceneId.value = null
       } else {
-        showDevicePicker.value = true
+        isDevicePickerOpen.value = true
       }
     } catch {
       errorMessage.value = 'Failed to fetch devices'
@@ -94,7 +93,7 @@ async function playScene(scene: Scene) {
 async function playOnDevice(device: SpotifyDevice) {
   if (!pendingScene.value) return
 
-  showDevicePicker.value = false
+  isDevicePickerOpen.value = false
   const scene = pendingScene.value
   const result = await startPlayback(scene.playlist.uri, device.id)
 
@@ -110,7 +109,7 @@ async function playOnDevice(device: SpotifyDevice) {
 }
 
 function cancelDevicePicker() {
-  showDevicePicker.value = false
+  isDevicePickerOpen.value = false
   playingSceneId.value = null
   pendingScene.value = null
 }
@@ -242,7 +241,7 @@ function cancelDevicePicker() {
 
     <!-- Device picker modal -->
     <div
-      v-if="showDevicePicker"
+      v-if="isDevicePickerOpen"
       class="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50"
       @click.self="cancelDevicePicker"
     >
