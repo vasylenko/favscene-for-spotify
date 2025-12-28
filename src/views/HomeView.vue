@@ -52,6 +52,16 @@ const showDevicePicker = ref(false)
 const availableDevices = ref<SpotifyDevice[]>([])
 const pendingScene = ref<Scene | null>(null)
 
+const PLAYING_FEEDBACK_MS = 2000
+
+async function handlePlaybackSuccess(volume: number, deviceId: string, onComplete?: () => void) {
+  await setVolume(volume, deviceId)
+  setTimeout(() => {
+    playingSceneId.value = null
+    onComplete?.()
+  }, PLAYING_FEEDBACK_MS)
+}
+
 async function playScene(scene: Scene) {
   errorMessage.value = null
   playingSceneId.value = scene.id
@@ -59,13 +69,7 @@ async function playScene(scene: Scene) {
   const result = await startPlayback(scene.playlist.uri, scene.device.id)
 
   if (result.success) {
-    // Set volume after playback starts (use scene volume or default)
-    const volume = scene.volume ?? DEFAULT_VOLUME
-    await setVolume(volume, scene.device.id)
-
-    setTimeout(() => {
-      playingSceneId.value = null
-    }, 2000)
+    await handlePlaybackSuccess(scene.volume ?? DEFAULT_VOLUME, scene.device.id)
   } else if (result.error?.includes('not found') || result.error?.includes('offline')) {
     // Device not available, show device picker
     pendingScene.value = scene
@@ -95,14 +99,9 @@ async function playOnDevice(device: SpotifyDevice) {
   const result = await startPlayback(scene.playlist.uri, device.id)
 
   if (result.success) {
-    // Set volume after playback starts
-    const volume = scene.volume ?? DEFAULT_VOLUME
-    await setVolume(volume, device.id)
-
-    setTimeout(() => {
-      playingSceneId.value = null
+    await handlePlaybackSuccess(scene.volume ?? DEFAULT_VOLUME, device.id, () => {
       pendingScene.value = null
-    }, 2000)
+    })
   } else {
     errorMessage.value = result.error || 'Playback failed'
     playingSceneId.value = null

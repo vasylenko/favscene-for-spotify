@@ -167,14 +167,10 @@ function saveScene() {
 
     <!-- Progress indicator -->
     <div class="flex items-center gap-2 mb-6 max-w-lg mx-auto">
+      <div class="flex-1 h-1 rounded-full bg-spotify-green" />
       <div
         class="flex-1 h-1 rounded-full"
-        :class="currentStep === 'playlist' ? 'bg-spotify-green' : 'bg-gray-700'"
-      />
-      <div
-        class="flex-1 h-1 rounded-full"
-        :class="currentStep === 'device' ? 'bg-spotify-green' : currentStep === 'name' ? 'bg-gray-700' : 'bg-gray-700'"
-        :style="{ background: currentStep !== 'playlist' ? '#1DB954' : undefined }"
+        :class="currentStep !== 'playlist' ? 'bg-spotify-green' : 'bg-gray-700'"
       />
       <div
         class="flex-1 h-1 rounded-full"
