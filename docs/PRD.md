@@ -201,7 +201,7 @@ Why `localStorage` over `IndexedDB`:
 - [x] Validate for KISS / YAGNI / DRY
 - [x] Sensitive info checkup
 - [x] Unused variables, functions cleanup
-- [ ] Log levels (default - error) and check what we emit to console
+- [x] Log levels (default - error) and check what we emit to console
 - [ ] README
 - [ ] CLAUDE.md update with layout and tech stack, and tooling
 - [x] Validate codestyle:
@@ -209,13 +209,13 @@ Why `localStorage` over `IndexedDB`:
     - [x] comments answer 'why' not 'what'
     - [x] self-documented names of variables and functions
     - [x] no magic numbers or other hardcoded values buried in the code
-- [ ] Mobile-specific optimizations
 
 ### Features
 - [x] P0 - Edit/delete for saved scene to change playlist or device or volume level
 - [ ] P0 - User-friendly error messages with troubleshooting guides - [TODO-user-friendly-errors.md](docs/features/TODO-user-friendly-errors.md)
 - [ ] P1 - Support secure encrypted user preferences storage (Workers KV?) to allow access to the same scenes from different devices - [TODO-support-multiple-browsers.md](docs/features/TODO-support-multiple-browsers.md)
 - [ ] P1 - Play/pause controls on active scene tile
+- [ ] P1 - Mobile-specific optimizations
 - [ ] P2 - "Save recent" scene creation from recently played
 - [ ] P2 - Multiple content types (albums, podcasts, liked songs) - [TODO-support-multiple-browsers.md](./features/TODO-support-multiple-browsers.md)
 - [ ] P3 - Logout flow and "comlpetely erase my data" flow

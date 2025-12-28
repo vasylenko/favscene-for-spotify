@@ -1,3 +1,5 @@
+import { logger } from '@/utils/logger'
+
 export const config = {
   spotify: {
     clientId: import.meta.env.VITE_SPOTIFY_CLIENT_ID || '',
@@ -14,7 +16,7 @@ export const config = {
 
 export function validateConfig(): boolean {
   if (!config.spotify.clientId) {
-    console.error('Missing VITE_SPOTIFY_CLIENT_ID environment variable')
+    logger.error('Missing VITE_SPOTIFY_CLIENT_ID environment variable')
     return false
   }
   return true
