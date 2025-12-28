@@ -205,7 +205,7 @@ Why `localStorage` over `IndexedDB`:
 - [ ] README
 - [ ] CLAUDE.md update with layout and tech stack, and tooling
 - [ ] Validate codestyle:
-    - [ ] TS-specific best practices
+    - [ ] TS and Vue-specific best practices
     - [ ] comments answer 'why' not 'what'
     - [x] no magic numbers or other hardcoded values buried in the code
 - [ ] Mobile-specific optimizations
