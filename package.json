@@ -6,7 +6,10 @@
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc -b && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "worker:dev": "wrangler dev",
+    "worker:deploy": "pnpm build && wrangler deploy",
+    "worker:types": "wrangler types"
   },
   "packageManager": "pnpm@10.26.2",
   "dependencies": {

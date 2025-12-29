@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useSpotifyAuth } from '@/composables/useSpotifyAuth'
 import { useScenes } from '@/composables/useScenes'
@@ -10,7 +10,14 @@ import type { Scene, SpotifyDevice } from '@/types'
 
 const router = useRouter()
 const { isAuthenticated, initiateLogin, user, isLoading: authLoading } = useSpotifyAuth()
-const { scenes, deleteScene } = useScenes()
+const { scenes, isLoading: scenesLoading, syncError, initializeScenes, deleteScene } = useScenes()
+
+// Initialize scenes on mount if already authenticated
+onMounted(async () => {
+  if (isAuthenticated.value && scenes.value.length === 0) {
+    await initializeScenes()
+  }
+})
 
 const actionMenuScene = ref<Scene | null>(null)
 const deleteConfirmScene = ref<Scene | null>(null)
@@ -171,8 +178,27 @@ function cancelDevicePicker() {
         <button class="text-red-300 hover:text-white" @click="errorMessage = null">&times;</button>
       </div>
 
+      <!-- Sync error message -->
+      <div
+        v-if="syncError"
+        class="mb-4 p-3 bg-yellow-900/30 border border-yellow-500 rounded-lg text-yellow-300 flex items-center justify-between"
+      >
+        <div class="flex-1">
+          <div class="font-semibold">Sync Warning</div>
+          <div class="text-sm">{{ syncError }}</div>
+          <div class="text-xs mt-1 text-yellow-400">Changes are saved locally. Please check your connection and try again later.</div>
+        </div>
+        <button class="text-yellow-300 hover:text-white ml-3" @click="syncError = null">&times;</button>
+      </div>
+
+      <!-- Loading state -->
+      <div v-if="scenesLoading" class="flex flex-col items-center justify-center py-20 text-center">
+        <div class="w-12 h-12 border-4 border-spotify-green border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+        <p class="text-spotify-gray">Loading your scenes...</p>
+      </div>
+
       <!-- Empty state -->
-      <div v-if="scenes.length === 0" class="flex flex-col items-center justify-center py-20 text-center">
+      <div v-else-if="scenes.length === 0" class="flex flex-col items-center justify-center py-20 text-center">
         <p class="text-spotify-gray mb-4">No favorite scenes yet. Create your first one!</p>
         <button
           class="px-6 py-3 bg-spotify-green text-black font-semibold rounded-full hover:scale-105 transition-transform"
