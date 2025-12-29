@@ -195,23 +195,24 @@ async function handlePutScenes(
 async function handleRequest(request: Request, env: Env): Promise<Response> {
   const url = new URL(request.url)
 
-  // Enforce HTTPS - redirect HTTP to HTTPS
-  if (url.protocol === 'http:') {
-    url.protocol = 'https:'
-    return Response.redirect(url.toString(), HTTP_MOVED_PERMANENTLY)
-  }
-
   // Only handle /api/* routes - pass everything else to static assets
   if (!url.pathname.startsWith('/api/')) {
     return env.ASSETS.fetch(request)
   }
 
-  // CORS preflight for API routes
+  // CORS preflight must be handled before HTTPS redirect
+  // (browsers reject redirects for preflight requests per CORS spec)
   if (request.method === 'OPTIONS') {
     return new Response(null, {
       status: HTTP_OK,
       headers: CORS_HEADERS,
     })
+  }
+
+  // Enforce HTTPS for API routes (skip in dev where Wrangler runs on HTTP)
+  if (url.protocol === 'http:' && url.hostname !== 'localhost') {
+    url.protocol = 'https:'
+    return Response.redirect(url.toString(), HTTP_MOVED_PERMANENTLY)
   }
 
   if (url.pathname === '/api/scenes') {
