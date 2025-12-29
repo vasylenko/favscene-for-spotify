@@ -7,11 +7,23 @@ import { getSpotifyApi } from '@/services/spotify'
 import { logger } from '@/utils/logger'
 import type { Scene } from '@/types'
 
+// HTTP status codes
+const HTTP_UNAUTHORIZED = 401
+
+// OAuth token format
+const BEARER_PREFIX = 'Bearer '
+
+// User-facing error messages
+const ERROR_NOT_AUTHENTICATED = 'Not authenticated'
+const ERROR_SESSION_EXPIRED = 'Session expired'
+const ERROR_NETWORK_UNAVAILABLE = 'Cannot connect to sync service. Please check your internet connection.'
+const ERROR_SAVE_FAILED = 'Failed to save scenes'
+
 export interface ApiResult<T> {
   success: boolean
   data?: T
   error?: string
-  needsReauth?: boolean // True if 401 - token invalid/expired
+  needsReauth?: boolean // Signals frontend to redirect to login flow
 }
 
 interface ScenesResponse {
@@ -22,9 +34,6 @@ interface SaveResponse {
   ok: boolean
 }
 
-/**
- * Gets current Spotify access token from SDK
- */
 async function getAccessToken(): Promise<string | null> {
   try {
     const sdk = getSpotifyApi()
@@ -36,15 +45,34 @@ async function getAccessToken(): Promise<string | null> {
   }
 }
 
-/**
- * Fetches scenes from API
- */
+function createAuthHeaders(token: string): Record<string, string> {
+  return {
+    'Authorization': `${BEARER_PREFIX}${token}`,
+  }
+}
+
+function handleUnauthorizedResponse(): ApiResult<never> {
+  return {
+    success: false,
+    error: ERROR_SESSION_EXPIRED,
+    needsReauth: true, // Triggers re-authentication flow
+  }
+}
+
+function handleNetworkError(error: unknown, operation: string): ApiResult<never> {
+  logger.error(`Network error ${operation}:`, error)
+  return {
+    success: false,
+    error: ERROR_NETWORK_UNAVAILABLE,
+  }
+}
+
 export async function fetchScenes(): Promise<ApiResult<Scene[]>> {
   const token = await getAccessToken()
   if (!token) {
     return {
       success: false,
-      error: 'Not authenticated',
+      error: ERROR_NOT_AUTHENTICATED,
       needsReauth: true,
     }
   }
@@ -52,17 +80,11 @@ export async function fetchScenes(): Promise<ApiResult<Scene[]>> {
   try {
     const response = await fetch(`${config.api.baseUrl}/api/scenes`, {
       method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
+      headers: createAuthHeaders(token),
     })
 
-    if (response.status === 401) {
-      return {
-        success: false,
-        error: 'Session expired',
-        needsReauth: true,
-      }
+    if (response.status === HTTP_UNAUTHORIZED) {
+      return handleUnauthorizedResponse()
     }
 
     if (!response.ok) {
@@ -80,23 +102,16 @@ export async function fetchScenes(): Promise<ApiResult<Scene[]>> {
       data: data.scenes,
     }
   } catch (error) {
-    logger.error('Network error fetching scenes:', error)
-    return {
-      success: false,
-      error: 'Cannot connect to sync service. Please check your internet connection.',
-    }
+    return handleNetworkError(error, 'fetching scenes')
   }
 }
 
-/**
- * Saves scenes to API
- */
 export async function saveScenes(scenes: Scene[]): Promise<ApiResult<void>> {
   const token = await getAccessToken()
   if (!token) {
     return {
       success: false,
-      error: 'Not authenticated',
+      error: ERROR_NOT_AUTHENTICATED,
       needsReauth: true,
     }
   }
@@ -105,18 +120,14 @@ export async function saveScenes(scenes: Scene[]): Promise<ApiResult<void>> {
     const response = await fetch(`${config.api.baseUrl}/api/scenes`, {
       method: 'PUT',
       headers: {
-        'Authorization': `Bearer ${token}`,
+        ...createAuthHeaders(token),
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ scenes }),
     })
 
-    if (response.status === 401) {
-      return {
-        success: false,
-        error: 'Session expired',
-        needsReauth: true,
-      }
+    if (response.status === HTTP_UNAUTHORIZED) {
+      return handleUnauthorizedResponse()
     }
 
     if (!response.ok) {
@@ -132,7 +143,7 @@ export async function saveScenes(scenes: Scene[]): Promise<ApiResult<void>> {
     if (!data.ok) {
       return {
         success: false,
-        error: 'Failed to save scenes',
+        error: ERROR_SAVE_FAILED,
       }
     }
 
@@ -140,10 +151,6 @@ export async function saveScenes(scenes: Scene[]): Promise<ApiResult<void>> {
       success: true,
     }
   } catch (error) {
-    logger.error('Network error saving scenes:', error)
-    return {
-      success: false,
-      error: 'Cannot connect to sync service. Please check your internet connection.',
-    }
+    return handleNetworkError(error, 'saving scenes')
   }
 }

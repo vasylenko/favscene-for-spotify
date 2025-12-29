@@ -31,23 +31,41 @@ interface ScenesPayload {
   scenes: Scene[]
 }
 
+// CORS configuration for browser access
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, PUT, OPTIONS',
   'Access-Control-Allow-Headers': 'Authorization, Content-Type',
 }
 
-const MAX_BODY_SIZE = 50 * 1024 // 50KB limit
-const MAX_SCENES = 50 // Max scenes per user
+// Resource limits to prevent abuse
+const MAX_BODY_SIZE = 50 * 1024 // 50KB - balances functionality vs storage cost
+const MAX_SCENES = 50 // Sufficient for hobby use, prevents bloat
 
-/**
- * Validates Spotify access token and returns user ID
- */
+// KV storage namespace
+const KV_KEY_PREFIX = 'scenes:' // Allows future multi-type storage (e.g., "settings:")
+
+// HTTP status codes
+const HTTP_OK = 200
+const HTTP_BAD_REQUEST = 400
+const HTTP_UNAUTHORIZED = 401
+const HTTP_NOT_FOUND = 404
+const HTTP_METHOD_NOT_ALLOWED = 405
+const HTTP_PAYLOAD_TOO_LARGE = 413
+const HTTP_INTERNAL_ERROR = 500
+
+// OAuth token format
+const BEARER_PREFIX = 'Bearer '
+const BEARER_PREFIX_LENGTH = BEARER_PREFIX.length
+
+// Spotify API endpoint for token validation
+const SPOTIFY_USER_PROFILE_URL = 'https://api.spotify.com/v1/me'
+
 async function validateSpotifyToken(token: string): Promise<string | null> {
   try {
-    const response = await fetch('https://api.spotify.com/v1/me', {
+    const response = await fetch(SPOTIFY_USER_PROFILE_URL, {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        'Authorization': `${BEARER_PREFIX}${token}`,
       },
     })
 
@@ -62,16 +80,10 @@ async function validateSpotifyToken(token: string): Promise<string | null> {
   }
 }
 
-/**
- * Builds KV key for user's scenes
- */
 function buildKVKey(userId: string): string {
-  return `scenes:${userId}`
+  return `${KV_KEY_PREFIX}${userId}`
 }
 
-/**
- * Handles GET /api/scenes - Fetch user's scenes
- */
 async function handleGetScenes(env: Env, userId: string): Promise<Response> {
   const kvKey = buildKVKey(userId)
   const stored = await env.SCENES_KV.get(kvKey)
@@ -84,25 +96,22 @@ async function handleGetScenes(env: Env, userId: string): Promise<Response> {
     const payload = JSON.parse(stored) as ScenesPayload
     return jsonResponse(payload)
   } catch {
-    // Corrupted data, return empty
+    // Data corruption from manual KV edits or version mismatch - fail gracefully
     return jsonResponse({ scenes: [] })
   }
 }
 
-/**
- * Handles PUT /api/scenes - Save user's scenes
- */
 async function handlePutScenes(
   env: Env,
   userId: string,
   request: Request
 ): Promise<Response> {
-  // Check body size before reading
+  // Defense-in-depth: check content-length header before reading body
   const contentLength = request.headers.get('content-length')
   if (contentLength && parseInt(contentLength, 10) > MAX_BODY_SIZE) {
     return jsonResponse(
       { error: 'Payload too large. Maximum 50KB allowed.' },
-      413
+      HTTP_PAYLOAD_TOO_LARGE
     )
   }
 
@@ -110,76 +119,70 @@ async function handlePutScenes(
   try {
     body = await request.text()
   } catch {
-    return jsonResponse({ error: 'Failed to read request body' }, 400)
+    return jsonResponse({ error: 'Failed to read request body' }, HTTP_BAD_REQUEST)
   }
 
-  // Additional size check after reading
+  // Second check: content-length can be spoofed, verify actual size
   if (body.length > MAX_BODY_SIZE) {
     return jsonResponse(
       { error: 'Payload too large. Maximum 50KB allowed.' },
-      413
+      HTTP_PAYLOAD_TOO_LARGE
     )
   }
 
-  // Parse and validate payload
   let payload: ScenesPayload
   try {
     payload = JSON.parse(body) as ScenesPayload
   } catch {
-    return jsonResponse({ error: 'Invalid JSON' }, 400)
+    return jsonResponse({ error: 'Invalid JSON' }, HTTP_BAD_REQUEST)
   }
 
   if (!payload.scenes || !Array.isArray(payload.scenes)) {
-    return jsonResponse({ error: 'Invalid payload structure' }, 400)
+    return jsonResponse({ error: 'Invalid payload structure' }, HTTP_BAD_REQUEST)
   }
 
   if (payload.scenes.length > MAX_SCENES) {
     return jsonResponse(
       { error: `Maximum ${MAX_SCENES} scenes allowed` },
-      400
+      HTTP_BAD_REQUEST
     )
   }
 
-  // Save to KV
   const kvKey = buildKVKey(userId)
   try {
     await env.SCENES_KV.put(kvKey, JSON.stringify(payload))
     return jsonResponse({ ok: true })
   } catch {
-    return jsonResponse({ error: 'Failed to save scenes' }, 500)
+    return jsonResponse({ error: 'Failed to save scenes' }, HTTP_INTERNAL_ERROR)
   }
 }
 
-/**
- * Main request handler
- */
 async function handleRequest(request: Request, env: Env): Promise<Response> {
   const url = new URL(request.url)
 
-  // Handle CORS preflight
+  // CORS preflight must be handled before authentication
   if (request.method === 'OPTIONS') {
     return new Response(null, {
-      status: 200,
+      status: HTTP_OK,
       headers: CORS_HEADERS,
     })
   }
 
-  // Handle API routes
   if (url.pathname === '/api/scenes') {
-    // Extract and validate token
     const authHeader = request.headers.get('Authorization')
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return jsonResponse({ error: 'Missing or invalid Authorization header' }, 401)
+    if (!authHeader || !authHeader.startsWith(BEARER_PREFIX)) {
+      return jsonResponse({ error: 'Missing or invalid Authorization header' }, HTTP_UNAUTHORIZED)
     }
 
-    const token = authHeader.slice(7) // Remove 'Bearer ' prefix
+    const token = authHeader.slice(BEARER_PREFIX_LENGTH)
+
+    // Derive user_id from token - prevents cross-user data access
     const userId = await validateSpotifyToken(token)
 
     if (!userId) {
-      return jsonResponse({ error: 'Invalid or expired token' }, 401)
+      return jsonResponse({ error: 'Invalid or expired token' }, HTTP_UNAUTHORIZED)
     }
 
-    // Route by method
     if (request.method === 'GET') {
       return handleGetScenes(env, userId)
     }
@@ -188,17 +191,13 @@ async function handleRequest(request: Request, env: Env): Promise<Response> {
       return handlePutScenes(env, userId, request)
     }
 
-    return jsonResponse({ error: 'Method not allowed' }, 405)
+    return jsonResponse({ error: 'Method not allowed' }, HTTP_METHOD_NOT_ALLOWED)
   }
 
-  // Not an API route - return 404
-  return jsonResponse({ error: 'Not found' }, 404)
+  return jsonResponse({ error: 'Not found' }, HTTP_NOT_FOUND)
 }
 
-/**
- * Helper to create JSON responses with CORS headers
- */
-function jsonResponse(data: unknown, status = 200): Response {
+function jsonResponse(data: unknown, status = HTTP_OK): Response {
   return new Response(JSON.stringify(data), {
     status,
     headers: {
@@ -216,7 +215,7 @@ export default {
       console.error('Worker error:', error)
       return jsonResponse(
         { error: 'Internal server error' },
-        500
+        HTTP_INTERNAL_ERROR
       )
     }
   },
