@@ -26,12 +26,13 @@ Example: "Morning Coffee" scene = Jazz playlist on kitchen Google Home speaker a
 
 No account creation, no backend servers. Your data stays in your browser, the app is just a mediator between you and Spotify.
 
+
 ## Design Philosophy
 
 - **One-tap playback** - The main action should be instant
 - **No clutter** - Only features that serve the core use case
 - **Graceful failures** - Devices go offline; the app handles it smoothly
-- **Your data, your browser** - No tracking, no analytics, no sync (yet; but I have a plan to add cross-browser sync)
+- **Your data, encryptedr** - No tracking, no analytics, no sync (yet; but I have a plan to add cross-browser sync)
 
 ## Requirements
 
