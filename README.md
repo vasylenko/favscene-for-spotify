@@ -32,11 +32,11 @@ No account creation, no backend servers. Your data stays in your browser, the ap
 - **One-tap playback** - The main action should be instant
 - **No clutter** - Only features that serve the core use case
 - **Graceful failures** - Devices go offline; the app handles it smoothly
-- **Your data, encryptedr** - No tracking, no analytics, no sync (yet; but I have a plan to add cross-browser sync)
+- **Your data is synced and encrypted** - Scenes are available in different browsers – desktop/mobile – and are encrypted with your Spotify ID as a key and encryption/decryption works only when you're authenticated with Spotify. 
 
 ## Requirements
 
-- Spotify Premium account (required for playback control — this is a Spotify API limitation)
+- **Spotify Premium account** required for playback control — this is a Spotify API limitation, unfortunately.
 - Modern browser, desktop or mobile (Chrome, Firefox, Safari, Edge)
 
 ## Built With
