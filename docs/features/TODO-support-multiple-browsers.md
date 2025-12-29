@@ -219,18 +219,14 @@ App starts
 
 
 ### Product Security Concerns
-**1. MEDIUM: Shared KV Write Quota Exhaustion**
 
-Why it's a flaw: Cloudflare KV free tier has a global limit of 1,000 writes/day across all users. A single malicious actor with a valid Spotify token could exhaust this by spamming PUT /api/scenes.
+**1. ~~MEDIUM~~ NON-ISSUE: Shared KV Write Quota**
 
-Impact: All legitimate users lose the ability to save scenes for the rest of the day.
+~~Why it's a flaw: Cloudflare KV free tier has a global limit of 1,000 writes/day across all users. A single malicious actor with a valid Spotify token could exhaust this by spamming PUT /api/scenes.~~
 
-Consequence if not fixed: One bad actor can deny service to everyone. This is a realistic attack because obtaining a valid Spotify token only requires signing up for Spotify.
+**Correction**: KV limits are "1,000 writes/day to different keys" and "1 write/second to same key". Each user writes to their own key (`scenes:{user_id}`), so a single user is limited to 1 write/second. Exhausting the 1,000/day quota requires ~1,000 different legitimate Spotify users - a scaling milestone, not an attack. If Spotify considers them legitimate users, so should we. Upgrade to paid plan when needed.
 
-Mitigation: Per-user rate limiting (e.g., max 10-20 writes/hour per user_id, tracked in KV with TTL).
-
-
-**2. LOW: No Request Body Size Limit Specified**
+**2. LOW: No Request Body Size Limit Specified (IMPLEMENTED)**
 
 Why it's a flaw: The design doesn't specify payload limits for PUT /api/scenes. An attacker could send massive JSON payloads.
 

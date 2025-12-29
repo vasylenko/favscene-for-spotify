@@ -4,10 +4,14 @@
  * Provides scene sync across browsers via KV storage.
  * Authentication: Validates Spotify access tokens, no token storage.
  * Access control: Users can only access their own scenes (keyed by Spotify user ID).
+ * Privacy: Data encrypted with user ID as key - owner cannot bulk-decrypt.
  */
 
+import { hashUserIdForKey, encrypt, decrypt, isEncrypted } from './crypto'
+
 interface Env {
-  SCENES_KV: KVNamespace
+  SCENES: KVNamespace
+  ASSETS: Fetcher
 }
 
 interface Scene {
@@ -50,6 +54,7 @@ const HTTP_OK = 200
 const HTTP_BAD_REQUEST = 400
 const HTTP_UNAUTHORIZED = 401
 const HTTP_NOT_FOUND = 404
+const HTTP_MOVED_PERMANENTLY = 301
 const HTTP_METHOD_NOT_ALLOWED = 405
 const HTTP_PAYLOAD_TOO_LARGE = 413
 const HTTP_INTERNAL_ERROR = 500
@@ -81,22 +86,35 @@ async function validateSpotifyToken(token: string): Promise<string | null> {
 }
 
 function buildKVKey(userId: string): string {
+  return `${KV_KEY_PREFIX}${hashUserIdForKey(userId)}`
+}
+
+// Legacy key format for migration (pre-encryption)
+function buildLegacyKVKey(userId: string): string {
   return `${KV_KEY_PREFIX}${userId}`
 }
 
 async function handleGetScenes(env: Env, userId: string): Promise<Response> {
   const kvKey = buildKVKey(userId)
-  const stored = await env.SCENES_KV.get(kvKey)
+  let stored = await env.SCENES.get(kvKey)
+
+  // Migration: check legacy key if new key not found
+  if (!stored) {
+    const legacyKey = buildLegacyKVKey(userId)
+    stored = await env.SCENES.get(legacyKey)
+  }
 
   if (!stored) {
     return jsonResponse({ scenes: [] })
   }
 
   try {
-    const payload = JSON.parse(stored) as ScenesPayload
+    // Handle both encrypted and legacy plaintext data
+    const jsonString = isEncrypted(stored) ? decrypt(stored, userId) : stored
+    const payload = JSON.parse(jsonString) as ScenesPayload
     return jsonResponse(payload)
   } catch {
-    // Data corruption from manual KV edits or version mismatch - fail gracefully
+    // Decryption or parse failure - data corrupted or wrong key
     return jsonResponse({ scenes: [] })
   }
 }
@@ -150,7 +168,8 @@ async function handlePutScenes(
 
   const kvKey = buildKVKey(userId)
   try {
-    await env.SCENES_KV.put(kvKey, JSON.stringify(payload))
+    const encrypted = encrypt(JSON.stringify(payload), userId)
+    await env.SCENES.put(kvKey, encrypted)
     return jsonResponse({ ok: true })
   } catch {
     return jsonResponse({ error: 'Failed to save scenes' }, HTTP_INTERNAL_ERROR)
@@ -160,7 +179,18 @@ async function handlePutScenes(
 async function handleRequest(request: Request, env: Env): Promise<Response> {
   const url = new URL(request.url)
 
-  // CORS preflight must be handled before authentication
+  // Enforce HTTPS - redirect HTTP to HTTPS
+  if (url.protocol === 'http:') {
+    url.protocol = 'https:'
+    return Response.redirect(url.toString(), HTTP_MOVED_PERMANENTLY)
+  }
+
+  // Only handle /api/* routes - pass everything else to static assets
+  if (!url.pathname.startsWith('/api/')) {
+    return env.ASSETS.fetch(request)
+  }
+
+  // CORS preflight for API routes
   if (request.method === 'OPTIONS') {
     return new Response(null, {
       status: HTTP_OK,

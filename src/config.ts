@@ -14,9 +14,9 @@ export const config = {
   },
   api: {
     // Base URL for scene sync API (Cloudflare Worker)
-    // Development: http://localhost:8787
-    // Production: https://favscene-for-spotify.YOUR_SUBDOMAIN.workers.dev
-    baseUrl: import.meta.env.VITE_API_BASE_URL || 'https://favscene-for-spotify.PLACEHOLDER.workers.dev',
+    // Production: empty string (same origin - frontend and API on same domain)
+    // Local dev: set VITE_API_BASE_URL to deployed worker or http://localhost:8787
+    baseUrl: import.meta.env.VITE_API_BASE_URL || '',
   },
 } as const
 

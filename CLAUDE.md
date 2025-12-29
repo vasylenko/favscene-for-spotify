@@ -65,10 +65,11 @@ pnpm build    # Type-check + production build
 pnpm preview  # Preview production build locally
 ```
 
-## Key Development Principles
-- YAGNI - Don't add features not explicitly needed
-- KISS - Prefer simple solutions over clever ones
-- Minimal valuable changes - Smallest diff that achieves the goal
+## CRITICAL CLAUDE CODE INSTRUCTIONS
+1. You follow YAGNI - Don't add features not explicitly needed
+2. You follow KISS - Prefer simple solutions over clever ones
+3. You follow "Minimal valuable changes" - Smallest diff that achieves the goal
+4. You always consult with official CloudFlare documentation for the respective feature, e.g. Worker when you work on any task realted to Workers or other CloudFlare product offering, e.g., the KV.
 
 ## Dev Tooling
 
@@ -82,3 +83,4 @@ pnpm preview  # Preview production build locally
 - `docs/features/` — Feature specs
 
 Read PRD.md before making architectural decisions.
+

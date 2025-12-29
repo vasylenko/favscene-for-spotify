@@ -2,14 +2,16 @@
   "name": "favscene-for-spotify",
   "compatibility_date": "2025-01-01",
   "main": "worker/index.ts",
+  "minify": true,
   "assets": {
     "directory": "./dist",
+    "binding": "ASSETS",
     "not_found_handling": "single-page-application"
   },
   "kv_namespaces": [
     {
-      "binding": "SCENES_KV",
-      "id": "PLACEHOLDER_KV_ID"
+      "binding": "SCENES",
+      "id": "6aae7a9b163f469da6f331c2fdc7018b"
     }
   ],
   "preview_urls": true,

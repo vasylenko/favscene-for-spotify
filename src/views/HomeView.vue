@@ -9,8 +9,13 @@ import { DEFAULT_VOLUME } from '@/types'
 import type { Scene, SpotifyDevice } from '@/types'
 
 const router = useRouter()
-const { isAuthenticated, initiateLogin, user, isLoading: authLoading } = useSpotifyAuth()
-const { scenes, isLoading: scenesLoading, syncError, initializeScenes, deleteScene } = useScenes()
+const { isAuthenticated, initiateLogin, clearAuth, user, isLoading: authLoading } = useSpotifyAuth()
+const { scenes, isLoading: scenesLoading, syncError, initializeScenes, deleteScene, clearScenes } = useScenes()
+
+function logout() {
+  clearScenes()
+  clearAuth()
+}
 
 // Initialize scenes on mount if already authenticated
 onMounted(async () => {
@@ -160,6 +165,12 @@ function cancelDevicePicker() {
         <h1 class="text-xl font-bold">Your Spotify Scenes</h1>
         <div class="flex items-center gap-3">
           <span class="text-spotify-gray text-sm">{{ user?.displayName }}</span>
+          <button
+            class="text-spotify-gray text-sm hover:text-white transition-colors"
+            @click="logout"
+          >
+            Logout
+          </button>
           <button
             class="px-4 py-2 bg-spotify-green text-black font-semibold rounded-full text-sm hover:scale-105 transition-transform"
             @click="router.push('/create')"

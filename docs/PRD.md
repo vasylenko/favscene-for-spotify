@@ -221,5 +221,15 @@ Why `localStorage` over `IndexedDB`:
 - [ ] P3 - Logout flow and "comlpetely erase my data" flow
 
 ## Post MVP
-- Try out LaunchDarkly for feature flags, e.g., when I want to test some new stuff 
-- Try out CloudFlare Workers observability 
+
+### LaunchDarkly
+Try out LaunchDarkly for feature flags, e.g., when I want to test some new stuff 
+
+### Workers Observability
+Try out CloudFlare Workers observability 
+
+### Reduce spotify API calls 
+**Token validation caching** 
+  - 5-minute TTL for token→user_id mappings
+  - Reduces external dependency risk
+  - Estimated effort: 1-2 hours
