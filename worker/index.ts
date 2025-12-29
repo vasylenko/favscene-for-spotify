@@ -10,7 +10,7 @@
 import { hashUserIdForKey, encrypt, decrypt, isEncrypted } from './crypto'
 
 interface Env {
-  SCENES: KVNamespace
+  FAVSCENE_USER_SCENES: KVNamespace
   ASSETS: Fetcher
 }
 
@@ -43,8 +43,8 @@ const CORS_HEADERS = {
 }
 
 // Resource limits to prevent abuse
-const MAX_BODY_SIZE = 50 * 1024 // 50KB - balances functionality vs storage cost
 const MAX_SCENES = 50 // Sufficient for hobby use, prevents bloat
+const MAX_BODY_SIZE = 50 * 1024 // 50KB - balances functionality vs storage cost
 
 // KV storage namespace
 const KV_KEY_PREFIX = 'scenes:' // Allows future multi-type storage (e.g., "settings:")
@@ -66,6 +66,11 @@ const BEARER_PREFIX_LENGTH = BEARER_PREFIX.length
 // Spotify API endpoint for token validation
 const SPOTIFY_USER_PROFILE_URL = 'https://api.spotify.com/v1/me'
 
+// Structured logging helper for Workers Logs
+function log(event: string, data: Record<string, unknown> = {}) {
+  console.log({ event, ...data})
+}
+
 async function validateSpotifyToken(token: string): Promise<string | null> {
   try {
     const response = await fetch(SPOTIFY_USER_PROFILE_URL, {
@@ -75,12 +80,14 @@ async function validateSpotifyToken(token: string): Promise<string | null> {
     })
 
     if (!response.ok) {
+      log('auth_failed', { reason: 'spotify_rejected', status: response.status })
       return null
     }
 
     const data = await response.json() as { id: string }
     return data.id
-  } catch {
+  } catch (err) {
+    log('auth_failed', { reason: 'spotify_error', error: String(err) })
     return null
   }
 }
@@ -95,16 +102,20 @@ function buildLegacyKVKey(userId: string): string {
 }
 
 async function handleGetScenes(env: Env, userId: string): Promise<Response> {
+  const userHash = hashUserIdForKey(userId)
   const kvKey = buildKVKey(userId)
-  let stored = await env.SCENES.get(kvKey)
+  let stored = await env.FAVSCENE_USER_SCENES.get(kvKey)
+  let usedLegacyKey = false
 
   // Migration: check legacy key if new key not found
   if (!stored) {
     const legacyKey = buildLegacyKVKey(userId)
-    stored = await env.SCENES.get(legacyKey)
+    stored = await env.FAVSCENE_USER_SCENES.get(legacyKey)
+    usedLegacyKey = !!stored
   }
 
   if (!stored) {
+    log('scenes_get', { userHash, sceneCount: 0 })
     return jsonResponse({ scenes: [] })
   }
 
@@ -112,9 +123,11 @@ async function handleGetScenes(env: Env, userId: string): Promise<Response> {
     // Handle both encrypted and legacy plaintext data
     const jsonString = isEncrypted(stored) ? decrypt(stored, userId) : stored
     const payload = JSON.parse(jsonString) as ScenesPayload
+    log('scenes_get', { userHash, sceneCount: payload.scenes.length, usedLegacyKey })
     return jsonResponse(payload)
-  } catch {
+  } catch (err) {
     // Decryption or parse failure - data corrupted or wrong key
+    log('scenes_get_error', { userHash, error: String(err) })
     return jsonResponse({ scenes: [] })
   }
 }
@@ -166,12 +179,15 @@ async function handlePutScenes(
     )
   }
 
+  const userHash = hashUserIdForKey(userId)
   const kvKey = buildKVKey(userId)
   try {
     const encrypted = encrypt(JSON.stringify(payload), userId)
-    await env.SCENES.put(kvKey, encrypted)
+    await env.FAVSCENE_USER_SCENES.put(kvKey, encrypted)
+    log('scenes_put', { userHash, sceneCount: payload.scenes.length })
     return jsonResponse({ ok: true })
-  } catch {
+  } catch (err) {
+    log('scenes_put_error', { userHash, error: String(err) })
     return jsonResponse({ error: 'Failed to save scenes' }, HTTP_INTERNAL_ERROR)
   }
 }
@@ -201,6 +217,7 @@ async function handleRequest(request: Request, env: Env): Promise<Response> {
   if (url.pathname === '/api/scenes') {
     const authHeader = request.headers.get('Authorization')
     if (!authHeader || !authHeader.startsWith(BEARER_PREFIX)) {
+      log('auth_failed', { reason: 'missing_header' })
       return jsonResponse({ error: 'Missing or invalid Authorization header' }, HTTP_UNAUTHORIZED)
     }
 
@@ -212,6 +229,8 @@ async function handleRequest(request: Request, env: Env): Promise<Response> {
     if (!userId) {
       return jsonResponse({ error: 'Invalid or expired token' }, HTTP_UNAUTHORIZED)
     }
+
+    log('auth_success', { userHash: hashUserIdForKey(userId) })
 
     if (request.method === 'GET') {
       return handleGetScenes(env, userId)

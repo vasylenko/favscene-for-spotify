@@ -11,8 +11,10 @@
 **Why user ID as key (not a server secret):**
 - Server secret = owner (me) can decrypt all users' data
 - User ID as key = owner cannot bulk-decrypt without knowing each user's ID
-- External attacker needs both KV access AND the specific username
+- External attacker needs both KV access (my cloudflare account access technically) AND the specific username
 - Better privacy guarantees for users
+
+userId comes from Spotify's response, not from user input. An attacker can't forge a userId to decrypt someone else's data - they'd need a valid Spotify token for that user.
 
 **Library choice:** `@noble/ciphers` - audited, zero dependencies, Cloudflare Workers compatible.
 

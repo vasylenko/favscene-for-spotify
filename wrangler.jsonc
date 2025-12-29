@@ -3,6 +3,10 @@
   "compatibility_date": "2025-01-01",
   "main": "worker/index.ts",
   "minify": true,
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1
+  },
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS",
@@ -10,8 +14,8 @@
   },
   "kv_namespaces": [
     {
-      "binding": "SCENES",
-      "id": "6aae7a9b163f469da6f331c2fdc7018b"
+      "binding": "FAVSCENE_USER_SCENES",
+      "id": "5a44348e8fb348d0acf9926fbbac3c88"
     }
   ],
   "preview_urls": true,
