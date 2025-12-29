@@ -1,4 +1,4 @@
-# Feature: User-Friendly Error Messages
+# Feature: User-Friendly Error Messages (Implemented)
 
 ## Problem
 

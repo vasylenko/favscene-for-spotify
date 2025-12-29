@@ -2,10 +2,12 @@
 import { onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useSpotifyAuth } from '@/composables/useSpotifyAuth'
+import { useScenes } from '@/composables/useScenes'
 
 const router = useRouter()
 const route = useRoute()
 const { handleCallback, isLoading, error } = useSpotifyAuth()
+const { initializeScenes } = useScenes()
 
 onMounted(async () => {
   // Check for error from Spotify (e.g., user denied access)
@@ -18,6 +20,8 @@ onMounted(async () => {
   // SDK detects callback params (code) automatically
   const success = await handleCallback()
   if (success) {
+    // Initialize scenes after successful authentication
+    await initializeScenes()
     router.replace('/')
   }
 })
