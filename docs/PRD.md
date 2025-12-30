@@ -212,8 +212,8 @@ Why `localStorage` over `IndexedDB`:
 
 ### Features
 - [x] P0 - Edit/delete for saved scene to change playlist or device or volume level
-- [ ] P0 - User-friendly error messages with troubleshooting guides - [TODO-user-friendly-errors.md](docs/features/TODO-user-friendly-errors.md)
-- [ ] P1 - Support secure encrypted user preferences storage (Workers KV?) to allow access to the same scenes from different devices - [TODO-support-multiple-browsers.md](docs/features/TODO-support-multiple-browsers.md)
+- [ ] P1 - User-friendly error messages with troubleshooting guides - [TODO-user-friendly-errors.md](docs/features/TODO-user-friendly-errors.md)
+- [x] P0 - Support secure encrypted user preferences storage (Workers KV?) to allow access to the same scenes from different devices - [TODO-support-multiple-browsers.md](docs/features/TODO-support-multiple-browsers.md)
 - [ ] P1 - Play/pause controls on active scene tile
 - [ ] P1 - Mobile-specific optimizations
 - [ ] P2 - "Save recent" scene creation from recently played
@@ -221,15 +221,5 @@ Why `localStorage` over `IndexedDB`:
 - [ ] P3 - Logout flow and "comlpetely erase my data" flow
 
 ## Post MVP
-
-### LaunchDarkly
-Try out LaunchDarkly for feature flags, e.g., when I want to test some new stuff 
-
-### Workers Observability
-Try out CloudFlare Workers observability 
-
-### Reduce spotify API calls 
-**Token validation caching** 
-  - 5-minute TTL for token→user_id mappings
-  - Reduces external dependency risk
-  - Estimated effort: 1-2 hours
+- Try out LaunchDarkly for feature flags, e.g., when I want to test some new stuff 
+- Try out CloudFlare Workers observability 

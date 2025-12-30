@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useSpotifyAuth } from '@/composables/useSpotifyAuth'
 import { useScenes } from '@/composables/useScenes'
@@ -26,6 +26,22 @@ onMounted(async () => {
 
 const actionMenuScene = ref<Scene | null>(null)
 const deleteConfirmScene = ref<Scene | null>(null)
+const isUserMenuOpen = ref(false)
+const userMenuRef = ref<HTMLElement | null>(null)
+
+function handleClickOutside(event: MouseEvent) {
+  if (userMenuRef.value && !userMenuRef.value.contains(event.target as Node)) {
+    isUserMenuOpen.value = false
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside)
+})
 
 function openActionMenu(scene: Scene) {
   actionMenuScene.value = scene
@@ -161,22 +177,28 @@ function cancelDevicePicker() {
     <!-- Authenticated -->
     <div v-else>
       <!-- Header -->
-      <header class="flex items-center justify-between mb-6">
-        <h1 class="text-xl font-bold">Your Spotify Scenes</h1>
-        <div class="flex items-center gap-3">
-          <span class="text-spotify-gray text-sm">{{ user?.displayName }}</span>
+      <header class="flex items-center justify-between mb-6 max-w-5xl mx-auto">
+        <h1 class="text-lg font-medium text-spotify-gray">FavScene</h1>
+        <div ref="userMenuRef" class="relative">
           <button
-            class="text-spotify-gray text-sm hover:text-white transition-colors"
-            @click="logout"
+            class="flex items-center gap-2 text-sm text-spotify-gray hover:text-white transition-colors px-3 py-2 rounded-lg hover:bg-white/5"
+            @click.stop="isUserMenuOpen = !isUserMenuOpen"
           >
-            Logout
+            <span>{{ user?.displayName }}</span>
+            <span class="text-xs">▾</span>
           </button>
-          <button
-            class="px-4 py-2 bg-spotify-green text-black font-semibold rounded-full text-sm hover:scale-105 transition-transform"
-            @click="router.push('/create')"
+          <!-- User dropdown -->
+          <div
+            v-if="isUserMenuOpen"
+            class="absolute right-0 top-full mt-1 bg-gray-800 rounded-lg shadow-xl py-1 min-w-32 z-50"
           >
-            + New Scene
-          </button>
+            <button
+              class="w-full px-4 py-2 text-left text-sm text-spotify-gray hover:text-white hover:bg-white/5 transition-colors"
+              @click="isUserMenuOpen = false; logout()"
+            >
+              Logout
+            </button>
+          </div>
         </div>
       </header>
 
@@ -208,19 +230,13 @@ function cancelDevicePicker() {
         <p class="text-spotify-gray">Loading your scenes...</p>
       </div>
 
-      <!-- Empty state -->
-      <div v-else-if="scenes.length === 0" class="flex flex-col items-center justify-center py-20 text-center">
-        <p class="text-spotify-gray mb-4">No favorite scenes yet. Create your first one!</p>
-        <button
-          class="px-6 py-3 bg-spotify-green text-black font-semibold rounded-full hover:scale-105 transition-transform"
-          @click="router.push('/create')"
-        >
-          Create First Scene
-        </button>
-      </div>
-
-      <!-- Scene grid -->
-      <div v-else class="grid grid-cols-2 gap-4 max-w-lg mx-auto">
+      <!-- Scene grid (always shown, includes + card) -->
+      <div
+        v-else
+        class="grid gap-4 mx-auto"
+        :class="scenes.length === 0 ? 'grid-cols-1 max-w-48 min-h-[70vh] place-content-center' : 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 max-w-5xl'"
+      >
+        <!-- Scene cards -->
         <div
           v-for="scene in scenes"
           :key="scene.id"
@@ -267,12 +283,15 @@ function cancelDevicePicker() {
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- Help text -->
-      <div v-if="scenes.length > 0" class="text-center text-sm text-spotify-gray mt-6 space-y-1">
-        <p>Tap the scene picture to play</p>
-        <p>Tap ⋮ (three dots icon) to edit or delete the scene</p>
+        <!-- Add new scene card -->
+        <button
+          class="aspect-square rounded-xl border-2 border-dashed border-gray-700 hover:border-spotify-green flex flex-col items-center justify-center gap-2 transition-all hover:scale-102 active:scale-98 group"
+          @click="router.push('/create')"
+        >
+          <span class="text-4xl text-gray-600 group-hover:text-spotify-green transition-colors">+</span>
+          <span class="text-sm text-gray-600 group-hover:text-spotify-green transition-colors">New Scene</span>
+        </button>
       </div>
     </div>
 
