@@ -32,7 +32,7 @@ No account creation needed — just your Spotify login. The app is a simple brid
 - **One-tap playback** - The main action should be instant
 - **No clutter** - Only features that serve the core use case
 - **Graceful failures** - Devices go offline; the app handles it smoothly
-- **Syncs across devices** - Your scenes are available on any browser where you log in. Data is stored encrypted and contains only your playlist/device preferences — nothing sensitive. 
+- **Syncs across devices** - Your scenes are available on any browser where you log in. We use your Spotify identity as the encryption key — no extra passwords to remember, just log in and your scenes are there. The tradeoff: encryption is tied to your account, not a separate passphrase. For playlist preferences, we think that's the right balance. 
 
 ## Requirements
 
