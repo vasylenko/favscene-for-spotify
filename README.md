@@ -24,7 +24,7 @@ Example: "Morning Coffee" scene = Jazz playlist on kitchen Google Home speaker a
 2. Create scenes by picking playlist + device
 3. Tap a scene tile to start playback instantly
 
-No account creation, no backend servers. Your data stays in your browser, the app is just a mediator between you and Spotify.
+No account creation needed — just your Spotify login. The app is a simple bridge between you and Spotify.
 
 
 ## Design Philosophy
@@ -32,7 +32,7 @@ No account creation, no backend servers. Your data stays in your browser, the ap
 - **One-tap playback** - The main action should be instant
 - **No clutter** - Only features that serve the core use case
 - **Graceful failures** - Devices go offline; the app handles it smoothly
-- **Your data is synced and encrypted** - Scenes are available in different browsers – desktop/mobile – and are encrypted with your Spotify ID as a key and encryption/decryption works only when you're authenticated with Spotify. 
+- **Syncs across devices** - Your scenes are available on any browser where you log in. Data is stored encrypted and contains only your playlist/device preferences — nothing sensitive. 
 
 ## Requirements
 
