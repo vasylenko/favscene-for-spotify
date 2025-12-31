@@ -74,6 +74,23 @@ function clearAuth(): void {
   clearUser()
 }
 
+async function validateSession(): Promise<boolean> {
+  if (!user.value) {
+    return false
+  }
+
+  const sdk = getSpotifyApi()
+  const token = await sdk.getAccessToken()
+
+  if (!token) {
+    // SDK has no valid tokens but we have stale user profile - clear it
+    clearUser()
+    return false
+  }
+
+  return true
+}
+
 export function useSpotifyAuth() {
   const isAuthenticated = computed(() => !!user.value)
 
@@ -85,5 +102,6 @@ export function useSpotifyAuth() {
     initiateLogin,
     handleCallback,
     clearAuth,
+    validateSession,
   }
 }

@@ -116,7 +116,7 @@ function goBack() {
   }
 }
 
-function saveScene() {
+async function saveScene() {
   if (!selectedPlaylist.value || !selectedDevice.value || !sceneName.value.trim()) {
     return
   }
@@ -138,9 +138,9 @@ function saveScene() {
   }
 
   if (isEditMode.value && sceneId.value) {
-    updateScene(sceneId.value, sceneData)
+    await updateScene(sceneId.value, sceneData)
   } else {
-    addScene(sceneData)
+    await addScene(sceneData)
   }
 
   router.push('/')

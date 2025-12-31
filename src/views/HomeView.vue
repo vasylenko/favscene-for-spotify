@@ -9,7 +9,7 @@ import { DEFAULT_VOLUME } from '@/types'
 import type { Scene, SpotifyDevice } from '@/types'
 
 const router = useRouter()
-const { isAuthenticated, initiateLogin, clearAuth, user, isLoading: authLoading } = useSpotifyAuth()
+const { isAuthenticated, initiateLogin, clearAuth, user, isLoading: authLoading, validateSession } = useSpotifyAuth()
 const { scenes, isLoading: scenesLoading, syncError, initializeScenes, deleteScene, clearScenes } = useScenes()
 
 function logout() {
@@ -17,10 +17,13 @@ function logout() {
   clearAuth()
 }
 
-// Initialize scenes on mount if already authenticated
+// Validate session and fetch scenes from API on mount
 onMounted(async () => {
-  if (isAuthenticated.value && scenes.value.length === 0) {
-    await initializeScenes()
+  if (isAuthenticated.value) {
+    const isValid = await validateSession()
+    if (isValid) {
+      await initializeScenes()
+    }
   }
 })
 
@@ -65,9 +68,9 @@ function cancelDelete() {
   deleteConfirmScene.value = null
 }
 
-function executeDelete() {
+async function executeDelete() {
   if (deleteConfirmScene.value) {
-    deleteScene(deleteConfirmScene.value.id)
+    await deleteScene(deleteConfirmScene.value.id)
     deleteConfirmScene.value = null
   }
 }
