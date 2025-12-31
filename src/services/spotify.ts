@@ -6,11 +6,9 @@ let sdk: SpotifyApi | null = null
 
 export function getSpotifyApi(): SpotifyApi {
   if (!sdk) {
-    sdk = SpotifyApi.withUserAuthorization(
-      config.spotify.clientId,
-      config.spotify.redirectUri,
-      [...config.spotify.scopes]
-    )
+    sdk = SpotifyApi.withUserAuthorization(config.spotify.clientId, config.spotify.redirectUri, [
+      ...config.spotify.scopes,
+    ])
   }
   return sdk
 }

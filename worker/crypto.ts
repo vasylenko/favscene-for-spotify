@@ -59,7 +59,7 @@ export function decrypt(encrypted: string, userId: string): string {
   const key = deriveKey(userId)
 
   // Decode base64 to bytes
-  const combined = Uint8Array.from(atob(encrypted), c => c.charCodeAt(0))
+  const combined = Uint8Array.from(atob(encrypted), (c) => c.charCodeAt(0))
 
   // Extract IV and ciphertext
   const iv = combined.slice(0, IV_LENGTH)

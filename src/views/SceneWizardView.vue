@@ -163,14 +163,8 @@ async function saveScene() {
     <!-- Progress indicator -->
     <div class="flex items-center gap-2 mb-6 max-w-lg mx-auto">
       <div class="flex-1 h-1 rounded-full bg-spotify-green" />
-      <div
-        class="flex-1 h-1 rounded-full"
-        :class="currentStep !== 'playlist' ? 'bg-spotify-green' : 'bg-gray-700'"
-      />
-      <div
-        class="flex-1 h-1 rounded-full"
-        :class="currentStep === 'name' ? 'bg-spotify-green' : 'bg-gray-700'"
-      />
+      <div class="flex-1 h-1 rounded-full" :class="currentStep !== 'playlist' ? 'bg-spotify-green' : 'bg-gray-700'" />
+      <div class="flex-1 h-1 rounded-full" :class="currentStep === 'name' ? 'bg-spotify-green' : 'bg-gray-700'" />
     </div>
 
     <!-- Loading state -->
@@ -222,9 +216,7 @@ async function saveScene() {
         </button>
       </div>
 
-      <p v-if="filteredPlaylists.length === 0" class="text-spotify-gray text-center py-8">
-        No playlists found
-      </p>
+      <p v-if="filteredPlaylists.length === 0" class="text-spotify-gray text-center py-8">No playlists found</p>
     </div>
 
     <!-- Step 2: Select Device -->
@@ -259,9 +251,7 @@ async function saveScene() {
         </button>
       </div>
 
-      <p v-if="devices.length === 0 && !error" class="text-spotify-gray text-center py-8">
-        No devices available
-      </p>
+      <p v-if="devices.length === 0 && !error" class="text-spotify-gray text-center py-8">No devices available</p>
 
       <button
         class="w-full mt-4 p-3 text-spotify-gray hover:text-white transition-colors border border-spotify-gray rounded-lg"

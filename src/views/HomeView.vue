@@ -13,6 +13,7 @@ const { isAuthenticated, initiateLogin, clearAuth, user, isLoading: authLoading,
 const { scenes, isLoading: scenesLoading, syncError, initializeScenes, deleteScene, clearScenes } = useScenes()
 
 function logout() {
+  isUserMenuOpen.value = false
   clearScenes()
   clearAuth()
 }
@@ -156,7 +157,9 @@ function cancelDevicePicker() {
           Missing Spotify client ID. Create a <code class="bg-gray-800 px-1 rounded">.env</code> file with your
           credentials.
         </p>
-        <p class="text-spotify-gray text-sm">See <code class="bg-gray-800 px-1 rounded">.env.example</code> for format.</p>
+        <p class="text-spotify-gray text-sm">
+          See <code class="bg-gray-800 px-1 rounded">.env.example</code> for format.
+        </p>
       </div>
     </div>
 
@@ -164,9 +167,7 @@ function cancelDevicePicker() {
     <div v-else-if="!isAuthenticated" class="flex items-center justify-center min-h-screen">
       <div class="text-center space-y-6 max-w-md">
         <h1 class="text-3xl font-bold">FavScene for Spotify</h1>
-        <p class="text-spotify-gray">
-          One-tap launcher for your favorite playlists on preferred devices.
-        </p>
+        <p class="text-spotify-gray">One-tap launcher for your favorite playlists on preferred devices.</p>
         <button
           class="px-8 py-3 bg-spotify-green text-black font-semibold rounded-full hover:scale-105 transition-transform disabled:opacity-50"
           :disabled="authLoading"
@@ -197,7 +198,7 @@ function cancelDevicePicker() {
           >
             <button
               class="w-full px-4 py-2 text-left text-sm text-spotify-gray hover:text-white hover:bg-white/5 transition-colors"
-              @click="isUserMenuOpen = false; logout()"
+              @click="logout()"
             >
               Logout
             </button>
@@ -222,14 +223,18 @@ function cancelDevicePicker() {
         <div class="flex-1">
           <div class="font-semibold">Sync Warning</div>
           <div class="text-sm">{{ syncError }}</div>
-          <div class="text-xs mt-1 text-yellow-400">Changes are saved locally. Please check your connection and try again later.</div>
+          <div class="text-xs mt-1 text-yellow-400">
+            Changes are saved locally. Please check your connection and try again later.
+          </div>
         </div>
         <button class="text-yellow-300 hover:text-white ml-3" @click="syncError = null">&times;</button>
       </div>
 
       <!-- Loading state -->
       <div v-if="scenesLoading" class="flex flex-col items-center justify-center py-20 text-center">
-        <div class="w-12 h-12 border-4 border-spotify-green border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+        <div
+          class="w-12 h-12 border-4 border-spotify-green border-t-transparent rounded-full animate-spin mx-auto mb-4"
+        />
         <p class="text-spotify-gray">Loading your scenes...</p>
       </div>
 
@@ -237,7 +242,11 @@ function cancelDevicePicker() {
       <div
         v-else
         class="grid gap-4 mx-auto"
-        :class="scenes.length === 0 ? 'grid-cols-1 max-w-48 min-h-[70vh] place-content-center' : 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 max-w-5xl'"
+        :class="
+          scenes.length === 0
+            ? 'grid-cols-1 max-w-48 min-h-[70vh] place-content-center'
+            : 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 max-w-5xl'
+        "
       >
         <!-- Scene cards -->
         <div
@@ -281,9 +290,7 @@ function cancelDevicePicker() {
             v-if="playingSceneId === scene.id"
             class="absolute inset-0 bg-spotify-green/20 flex items-center justify-center"
           >
-            <div class="bg-spotify-green text-black px-4 py-2 rounded-full font-semibold">
-              Playing!
-            </div>
+            <div class="bg-spotify-green text-black px-4 py-2 rounded-full font-semibold">Playing!</div>
           </div>
         </div>
 
@@ -306,9 +313,7 @@ function cancelDevicePicker() {
     >
       <div class="bg-gray-900 rounded-xl p-6 max-w-sm w-full">
         <h2 class="text-lg font-semibold mb-2">Device Unavailable</h2>
-        <p class="text-spotify-gray text-sm mb-4">
-          Select another device to play on:
-        </p>
+        <p class="text-spotify-gray text-sm mb-4">Select another device to play on:</p>
         <div class="space-y-2">
           <button
             v-for="device in availableDevices"
@@ -368,14 +373,9 @@ function cancelDevicePicker() {
     >
       <div class="bg-gray-900 rounded-xl p-6 max-w-sm w-full">
         <h2 class="text-lg font-semibold mb-2">Delete "{{ deleteConfirmScene.name }}"?</h2>
-        <p class="text-spotify-gray text-sm mb-6">
-          This cannot be undone.
-        </p>
+        <p class="text-spotify-gray text-sm mb-6">This cannot be undone.</p>
         <div class="flex gap-3">
-          <button
-            class="flex-1 p-3 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors"
-            @click="cancelDelete"
-          >
+          <button class="flex-1 p-3 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors" @click="cancelDelete">
             Cancel
           </button>
           <button

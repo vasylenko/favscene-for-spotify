@@ -68,14 +68,14 @@ const SPOTIFY_USER_PROFILE_URL = 'https://api.spotify.com/v1/me'
 
 // Structured logging helper for Workers Logs
 function log(event: string, data: Record<string, unknown> = {}) {
-  console.log({ event, ...data})
+  console.log({ event, ...data })
 }
 
 async function validateSpotifyToken(token: string): Promise<string | null> {
   try {
     const response = await fetch(SPOTIFY_USER_PROFILE_URL, {
       headers: {
-        'Authorization': `${BEARER_PREFIX}${token}`,
+        Authorization: `${BEARER_PREFIX}${token}`,
       },
     })
 
@@ -84,7 +84,7 @@ async function validateSpotifyToken(token: string): Promise<string | null> {
       return null
     }
 
-    const data = await response.json() as { id: string }
+    const data = (await response.json()) as { id: string }
     return data.id
   } catch (err) {
     log('auth_failed', { reason: 'spotify_error', error: String(err) })
@@ -132,18 +132,11 @@ async function handleGetScenes(env: Env, userId: string): Promise<Response> {
   }
 }
 
-async function handlePutScenes(
-  env: Env,
-  userId: string,
-  request: Request
-): Promise<Response> {
+async function handlePutScenes(env: Env, userId: string, request: Request): Promise<Response> {
   // Defense-in-depth: check content-length header before reading body
   const contentLength = request.headers.get('content-length')
   if (contentLength && parseInt(contentLength, 10) > MAX_BODY_SIZE) {
-    return jsonResponse(
-      { error: 'Payload too large. Maximum 50KB allowed.' },
-      HTTP_PAYLOAD_TOO_LARGE
-    )
+    return jsonResponse({ error: 'Payload too large. Maximum 50KB allowed.' }, HTTP_PAYLOAD_TOO_LARGE)
   }
 
   let body: string
@@ -155,10 +148,7 @@ async function handlePutScenes(
 
   // Second check: content-length can be spoofed, verify actual size
   if (body.length > MAX_BODY_SIZE) {
-    return jsonResponse(
-      { error: 'Payload too large. Maximum 50KB allowed.' },
-      HTTP_PAYLOAD_TOO_LARGE
-    )
+    return jsonResponse({ error: 'Payload too large. Maximum 50KB allowed.' }, HTTP_PAYLOAD_TOO_LARGE)
   }
 
   let payload: ScenesPayload
@@ -173,10 +163,7 @@ async function handlePutScenes(
   }
 
   if (payload.scenes.length > MAX_SCENES) {
-    return jsonResponse(
-      { error: `Maximum ${MAX_SCENES} scenes allowed` },
-      HTTP_BAD_REQUEST
-    )
+    return jsonResponse({ error: `Maximum ${MAX_SCENES} scenes allowed` }, HTTP_BAD_REQUEST)
   }
 
   const userHash = hashUserIdForKey(userId)
@@ -263,10 +250,7 @@ export default {
       return await handleRequest(request, env)
     } catch (error) {
       console.error('Worker error:', error)
-      return jsonResponse(
-        { error: 'Internal server error' },
-        HTTP_INTERNAL_ERROR
-      )
+      return jsonResponse({ error: 'Internal server error' }, HTTP_INTERNAL_ERROR)
     }
   },
 }

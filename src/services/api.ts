@@ -47,7 +47,7 @@ async function getAccessToken(): Promise<string | null> {
 
 function createAuthHeaders(token: string): Record<string, string> {
   return {
-    'Authorization': `${BEARER_PREFIX}${token}`,
+    Authorization: `${BEARER_PREFIX}${token}`,
   }
 }
 
