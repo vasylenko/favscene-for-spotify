@@ -15,24 +15,42 @@ export function getSpotifyApi(): SpotifyApi {
 
 export async function getUserPlaylists(): Promise<SpotifyPlaylist[]> {
   const api = getSpotifyApi()
-  const playlists: SpotifyPlaylist[] = []
+  // Use Map to deduplicate - Spotify API can return duplicates due to "DJ" phantom playlist
+  // See: https://community.spotify.com/t5/Spotify-for-Developers/Get-Current-User-s-Playlists-returns-incorrect-data-when-DJ-is/td-p/6019721
+  const playlistMap = new Map<string, SpotifyPlaylist>()
   let offset = 0
   const limit = 50
+  let expectedTotal = 0
 
   while (true) {
     const page = await api.currentUser.playlists.playlists(limit, offset)
 
+    if (offset === 0) {
+      expectedTotal = page.total
+    }
+
+    // Filter out null items - API can return null for unavailable playlists
+    // See: https://community.spotify.com/t5/Spotify-for-Developers/null-values-when-using-quot-Get-Current-User-s-Playlists-quot/td-p/6549968
     for (const item of page.items) {
-      playlists.push({
-        id: item.id,
-        name: item.name,
-        uri: item.uri,
-        imageUrl: item.images?.[0]?.url || null,
-      })
+      if (item && item.id) {
+        playlistMap.set(item.id, {
+          id: item.id,
+          name: item.name,
+          uri: item.uri,
+          imageUrl: item.images?.[0]?.url || null,
+        })
+      }
     }
 
     if (!page.next) break
     offset += limit
+  }
+
+  const playlists = Array.from(playlistMap.values())
+
+  // Log discrepancy for debugging (DJ phantom can cause total mismatch)
+  if (playlists.length !== expectedTotal) {
+    console.debug(`[Spotify] Fetched ${playlists.length} playlists (API reported total: ${expectedTotal})`)
   }
 
   return playlists
